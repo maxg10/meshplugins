@@ -1,0 +1,10 @@
+# build output
+dist/
+
+__pycache__/
+*.pyc
+.DS_Store
+
+# runtime files the mapper writes into the plugin dir
+config.json
+data.db

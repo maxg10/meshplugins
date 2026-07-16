@@ -1,0 +1,45 @@
+{
+    "id": "maxg10/meshcore",
+    "name": "Meshcore",
+    "version": "1.0.0",
+    "description": "Show Meshcore network nodes on the MeshPulse map alongside Meshtastic (read-only)",
+    "author": {
+        "name": "Max Gieparda",
+        "github": "maxg10"
+    },
+    "license": "GPL-3.0",
+    "compatibility": {
+        "min_mapper_version": "2.6.0",
+        "tested_up_to": "2.5.5"
+    },
+    "permissions": ["node_inject"],
+    "backend": {
+        "entry_point": "backend/main.py",
+        "requirements": "requirements.txt"
+    },
+    "config": {
+        "connection_type": {
+            "type": "select",
+            "options": ["serial", "tcp"],
+            "default": "serial",
+            "description": "Connection type — how to reach the Meshcore companion node"
+        },
+        "device_path": {
+            "type": "string",
+            "default": "",
+            "description": "Serial device, e.g. /dev/serial/by-id/usb-Seeed_Studio_..._-if00 (use by-id, ttyACM numbering shifts on reboot)"
+        },
+        "tcp_host": {
+            "type": "string",
+            "default": "",
+            "description": "TCP host — host or host:port (default port 5000)"
+        },
+        "contact_sync_interval": {
+            "type": "number",
+            "default": 300,
+            "min": 60,
+            "max": 3600,
+            "description": "Contact sync interval (s) — how often to re-read the node's contact list"
+        }
+    }
+}
