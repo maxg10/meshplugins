@@ -1,0 +1,91 @@
+{
+    "id": "maxg10/bbs",
+    "name": "Meshtastic BBS",
+    "version": "1.0.6",
+    "description": "FidoNet-inspired bulletin board system for Meshtastic mesh networks — bulletin areas, private netmail, node directory, and retro terminal web UI.",
+    "author": {
+        "name": "Mariusz Gieparda",
+        "email": "mgieparda@yahoo.com",
+        "url": "https://github.com/maxg10"
+    },
+    "license": "GPL-3.0",
+    "homepage": "https://github.com/maxg10/meshplugin-bbs",
+    "documentation": "https://github.com/maxg10/meshplugin-bbs/blob/master/docs/COMMANDS.md",
+    "compatibility": {
+        "min_mapper_version": "2.2.0",
+        "tested_up_to": "2.4.3"
+    },
+    "permissions": [
+        "mesh_receive",
+        "mesh_send"
+    ],
+    "backend": {
+        "entry_point": "backend/main.py",
+        "requirements": "backend/requirements.txt"
+    },
+    "frontend": {
+        "pages": [
+            {
+                "id": "bbs",
+                "title": "BBS",
+                "icon": "💾",
+                "path": "frontend/index.html"
+            }
+        ],
+        "js": null,
+        "css": null
+    },
+    "hooks": [
+        "on_enable",
+        "on_disable",
+        "on_mesh_message",
+        "on_node_update"
+    ],
+    "api_routes": [
+        {"method": "GET",  "path": "/boards",                 "handler": "get_boards"},
+        {"method": "GET",  "path": "/boards/{area}/messages", "handler": "get_messages"},
+        {"method": "POST", "path": "/boards/{area}/messages", "handler": "post_message"},
+        {"method": "GET",  "path": "/mail",                   "handler": "get_mail"},
+        {"method": "POST", "path": "/mail",                   "handler": "send_mail"},
+        {"method": "GET",  "path": "/nodes",                  "handler": "get_nodes"},
+        {"method": "GET",  "path": "/stats",                  "handler": "get_stats"}
+    ],
+    "websocket_channels": [
+        "bbs_updates"
+    ],
+    "dependencies": [],
+    "config": {
+        "bbs_name": {
+            "type": "text",
+            "default": "MeshBBS",
+            "title": "BBS Name",
+            "description": "System name shown to users in responses and the web UI"
+        },
+        "welcome_message": {
+            "type": "text",
+            "default": "Welcome to MeshBBS! Type BBS HELP for commands.",
+            "title": "Welcome Message",
+            "description": "Sent automatically to a node the first time it is seen"
+        },
+        "auto_welcome": {
+            "type": "boolean",
+            "default": true,
+            "title": "Auto Welcome",
+            "description": "Send the welcome message to new nodes automatically"
+        },
+        "max_messages_per_read": {
+            "type": "number",
+            "default": 3,
+            "min": 1,
+            "max": 5,
+            "title": "Messages per READ",
+            "description": "Maximum messages returned per BBS READ command (keep low to save mesh bandwidth)"
+        },
+        "about_message": {
+            "type": "textarea",
+            "default": "",
+            "title": "About message",
+            "description": "Message shown when someone types !bbs about. Leave empty for default."
+        }
+    }
+}

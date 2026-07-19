@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!-- Meshtastic BBS Plugin — maxg10/bbs — GPL-3.0 -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeshBBS</title>
+  <link rel="stylesheet" href="css/bbs.css">
+</head>
+<body>
+  <div id="terminal">
+
+    <!-- ── header / banner ── -->
+    <div id="header">
+      <pre id="banner">
+ __  __           _     ____  ____  ____
+|  \/  | ___  ___| |__ | __ )| __ )/ ___|
+| |\/| |/ _ \/ __| '_ \|  _ \|  _ \\___ \
+| |  | |  __/\__ \ | | | |_) | |_) |___) |
+|_|  |_|\___||___/_| |_|____/|____/|____/</pre>
+      <div id="nav-tabs">
+        <button class="tab active" data-view="boards">[ BOARDS ]</button>
+        <button class="tab" data-view="mail">[ NETMAIL ]</button>
+        <button class="tab" data-view="nodes">[ NODES ]</button>
+        <button class="tab" data-view="info">[ INFO ]</button>
+      </div>
+    </div>
+
+    <!-- ── main content ── -->
+    <div id="content">
+
+      <!-- sidebar -->
+      <div id="sidebar">
+        <div class="side-header">─ AREAS ─</div>
+        <ul id="area-list">
+          <li class="area-item active" data-area="GENERAL">GENERAL <span class="area-count">…</span></li>
+          <li class="area-item" data-area="TECH">TECH <span class="area-count">…</span></li>
+          <li class="area-item" data-area="LOCAL">LOCAL <span class="area-count">…</span></li>
+          <li class="area-item" data-area="MESH">MESH <span class="area-count">…</span></li>
+        </ul>
+        <div class="side-header">─ QUICK ─</div>
+        <div id="quick-stats">
+          <div class="stat-row">Msgs: <span id="qs-msgs">…</span></div>
+          <div class="stat-row">Mail: <span id="qs-mail">…</span></div>
+          <div class="stat-row">Nodes: <span id="qs-nodes">…</span></div>
+        </div>
+      </div>
+
+      <!-- main panel -->
+      <div id="main-panel">
+
+        <!-- BOARDS view -->
+        <div id="boards-view" class="view active">
+          <div class="panel-toolbar">
+            <span id="boards-title" class="toolbar-title">GENERAL</span>
+            <span class="toolbar-actions">
+              <button class="btn-sm" id="btn-refresh">↺ REFRESH</button>
+              <button class="btn-sm btn-accent" id="btn-post">✎ POST</button>
+            </span>
+          </div>
+          <div id="msg-list" class="scroll-area"></div>
+          <div class="pagination" id="boards-pagination">
+            <button class="btn-sm" id="btn-prev" disabled>◄ PREV</button>
+            <span id="page-info">Page 1</span>
+            <button class="btn-sm" id="btn-next">NEXT ►</button>
+          </div>
+        </div>
+
+        <!-- COMPOSE overlay (shown over boards view) -->
+        <div id="compose-view" class="view hidden">
+          <div class="panel-toolbar">
+            <span class="toolbar-title">POST TO <span id="compose-area-name">GENERAL</span></span>
+            <span class="toolbar-actions">
+              <button class="btn-sm" id="btn-compose-cancel">✕ CANCEL</button>
+            </span>
+          </div>
+          <div class="form-body">
+            <div class="form-row">
+              <label class="form-label">FROM NODE:</label>
+              <input type="text" id="compose-from" class="form-input" placeholder="!abcd1234 or callsign" maxlength="16">
+            </div>
+            <div class="form-row">
+              <label class="form-label">MESSAGE:</label>
+              <textarea id="compose-body" class="form-textarea" maxlength="200"
+                placeholder="Your message (max 200 chars — mesh packet limit)"></textarea>
+              <div id="char-counter" class="char-counter">0 / 200</div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-accent" id="btn-compose-send">▶ SEND</button>
+            </div>
+            <div id="compose-status" class="form-status"></div>
+          </div>
+        </div>
+
+        <!-- NETMAIL view -->
+        <div id="mail-view" class="view hidden">
+          <div class="panel-toolbar">
+            <span class="toolbar-title">NETMAIL</span>
+            <span class="toolbar-actions">
+              <button class="btn-sm btn-accent" id="btn-new-mail">✎ NEW MAIL</button>
+            </span>
+          </div>
+          <!-- mail filter -->
+          <div class="mail-filter">
+            <label class="form-label">FILTER TO NODE:</label>
+            <input type="text" id="mail-filter-node" class="form-input form-input-sm"
+              placeholder="!abcd1234 or leave blank for all">
+            <button class="btn-sm" id="btn-mail-filter">FILTER</button>
+          </div>
+          <div id="mail-list" class="scroll-area"></div>
+        </div>
+
+        <!-- MAIL COMPOSE overlay -->
+        <div id="mail-compose-view" class="view hidden">
+          <div class="panel-toolbar">
+            <span class="toolbar-title">NEW NETMAIL</span>
+            <span class="toolbar-actions">
+              <button class="btn-sm" id="btn-mail-cancel">✕ CANCEL</button>
+            </span>
+          </div>
+          <div class="form-body">
+            <div class="form-row">
+              <label class="form-label">FROM:</label>
+              <input type="text" id="mail-from" class="form-input" placeholder="!abcd1234 or callsign" maxlength="16">
+            </div>
+            <div class="form-row">
+              <label class="form-label">TO NODE:</label>
+              <input type="text" id="mail-to" class="form-input" placeholder="!abcd1234 or node short name" maxlength="16">
+            </div>
+            <div class="form-row">
+              <label class="form-label">MESSAGE:</label>
+              <textarea id="mail-body" class="form-textarea" maxlength="200"
+                placeholder="Private message (max 200 chars)"></textarea>
+              <div id="mail-char-counter" class="char-counter">0 / 200</div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-accent" id="btn-mail-send">▶ SEND</button>
+            </div>
+            <div id="mail-compose-status" class="form-status"></div>
+          </div>
+        </div>
+
+        <!-- NODES view -->
+        <div id="nodes-view" class="view hidden">
+          <div class="panel-toolbar">
+            <span class="toolbar-title">NODE DIRECTORY</span>
+            <span class="toolbar-actions">
+              <button class="btn-sm" id="btn-nodes-refresh">↺ REFRESH</button>
+            </span>
+          </div>
+          <div id="nodes-list" class="scroll-area"></div>
+        </div>
+
+        <!-- INFO view -->
+        <div id="info-view" class="view hidden">
+          <div class="panel-toolbar">
+            <span class="toolbar-title">BBS INFORMATION</span>
+          </div>
+          <div id="info-body" class="scroll-area info-body"></div>
+        </div>
+
+      </div><!-- /main-panel -->
+    </div><!-- /content -->
+
+    <!-- ── status bar ── -->
+    <div id="status-bar">
+      <span id="sb-name">MeshBBS v1.0</span>
+      <span id="sb-stats"></span>
+      <span id="ws-indicator" class="ws-offline">● OFFLINE</span>
+    </div>
+
+  </div><!-- /terminal -->
+
+  <script src="js/bbs.js"></script>
+</body>
+</html>
