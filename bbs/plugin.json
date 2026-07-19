@@ -13,7 +13,7 @@
     "documentation": "https://github.com/maxg10/meshplugin-bbs/blob/master/docs/COMMANDS.md",
     "compatibility": {
         "min_mapper_version": "2.2.0",
-        "tested_up_to": "2.4.3"
+        "tested_up_to": "2.6.0"
     },
     "permissions": [
         "mesh_receive",
