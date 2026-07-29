@@ -244,7 +244,13 @@ var WeatherOverlayPlugin = (function () {
         this._metric   = api.storage.get('metric')   || 'temperature';
         this._showHeat = api.storage.get('showHeat') !== '0';
 
-        api.map.addControl('weather-panel', this._buildPanel(), 'topleft');
+        this._panel = this._buildPanel();
+        if (api.panels && api.panels.register) {
+            api.panels.register(this._panel);
+        } else {
+            // Core < 2.6.1 has no panels API
+            api.map.addControl('weather-panel', this._panel, 'topleft');
+        }
         this._render();
 
         var self = this;
@@ -268,7 +274,12 @@ var WeatherOverlayPlugin = (function () {
             this._mapMoveHandler = null;
         }
         this._clearHeat();
-        api.map.removeControl('weather-panel');
+        if (api.panels && api.panels.unregister) {
+            api.panels.unregister(this._panel);
+        } else {
+            api.map.removeControl('weather-panel');
+        }
+        this._panel = null;
         console.log('[WeatherOverlay] disabled');
     };
 

@@ -125,7 +125,13 @@ var ElevationMapPlugin = (function() {
             }
         });
 
-        api.map.addControl('elevation-toggle', control, 'topleft');
+        this._control = control;
+        if (api.panels && api.panels.register) {
+            api.panels.register(control);
+        } else {
+            // Core < 2.6.1 has no panels API
+            api.map.addControl('elevation-toggle', control, 'topleft');
+        }
 
         // Auto-enable based on resolved state
         if (isActive) {
@@ -199,7 +205,12 @@ var ElevationMapPlugin = (function() {
         if (this.hillshadeLayer && rawMap.hasLayer(this.hillshadeLayer)) {
             rawMap.removeLayer(this.hillshadeLayer);
         }
-        api.map.removeControl('elevation-toggle');
+        if (api.panels && api.panels.unregister) {
+            api.panels.unregister(this._control);
+        } else {
+            api.map.removeControl('elevation-toggle');
+        }
+        this._control = null;
 
         if (this._activeKey) {
             localStorage.removeItem(this._activeKey);

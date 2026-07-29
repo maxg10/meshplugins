@@ -1,7 +1,7 @@
 {
     "id": "maxg10/elevation-map",
     "name": "Elevation Map",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Terrain/elevation overlay for the map — toggle topographic tiles on/off",
     "author": {
         "name": "Mariusz Gieparda",
@@ -12,7 +12,7 @@
     "homepage": "https://github.com/maxg10/meshplugin-elevation-map",
     "compatibility": {
         "min_mapper_version": "2.2.0",
-        "tested_up_to": "2.6.0"
+        "tested_up_to": "2.6.1"
     },
     "permissions": [
         "raw_map_access"

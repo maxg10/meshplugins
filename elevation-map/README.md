@@ -16,6 +16,10 @@ As of **v1.0.2** the defunct legacy terrain provider (whose tile host shut down 
 the end of 2023) has been replaced by Esri World Topo. This release also adds the
 Hillshade overlay toggle and a `hillshade_default` config option.
 
+As of **v1.0.3** the toggle control registers with the core panel system
+(MeshPulse >= 2.6.1), so it integrates with the mobile layers drawer; on older
+cores it falls back to the previous placement.
+
 ## Requirements
 
 - MeshPulse >= 2.2.0

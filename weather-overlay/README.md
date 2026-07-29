@@ -9,6 +9,10 @@ heatmap overlay. Frontend-only, no backend.
 As of **v1.0.1** the labels render in a dedicated map pane above the
 direct/neighbor/traceroute lines, so crossing lines no longer make them unreadable.
 
+As of **v1.0.2** the control panel registers with the core panel system
+(MeshPulse >= 2.6.1), so it integrates with the mobile layers drawer; on older
+cores it falls back to the previous placement.
+
 ## Requirements
 
 - MeshPulse >= 2.5.3
