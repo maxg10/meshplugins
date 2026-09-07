@@ -1,7 +1,7 @@
 {
     "id": "maxg10/weather-overlay",
     "name": "Weather Overlay",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Shows environment sensor data (temperature, humidity, pressure) as map labels and heatmap overlay for nodes reporting environmentMetrics.",
     "author": {
         "name": "Mariusz \"Max\" Gieparda",
@@ -11,7 +11,7 @@
     "license": "GPL-3.0",
     "compatibility": {
         "min_mapper_version": "2.5.3",
-        "tested_up_to": "2.6.1"
+        "tested_up_to": "2.7.0"
     },
     "permissions": ["raw_map_access"],
     "frontend": {

@@ -182,7 +182,10 @@ var WeatherOverlayPlugin = (function () {
     };
 
     Plugin.prototype._render = function () {
-        var all = this.api.nodes.getAll();
+        // Draw only what the map is drawing — getAll() ignores the core's filters, so
+        // labels would survive unchecking Meshtastic/Meshcore. getVisible() is 2.7.0+.
+        var api = this.api;
+        var all = api.nodes.getVisible ? api.nodes.getVisible() : api.nodes.getAll();
         var weatherNodes = this._nodesWithData(all);
         var zoom = this._lmap.getZoom();
         if (zoom >= 10) {
@@ -259,6 +262,12 @@ var WeatherOverlayPlugin = (function () {
 
         this._onUpdate = function () { self._render(); };
         api.nodes.onUpdate(this._onUpdate);
+
+        // Re-render when the user toggles a map filter (core 2.7.0+)
+        if (api.nodes.onFilterChange) {
+            this._onFilterChange = function () { self._render(); };
+            api.nodes.onFilterChange(this._onFilterChange);
+        }
 
         console.log('[WeatherOverlay] enabled, metric:', this._metric);
     };
