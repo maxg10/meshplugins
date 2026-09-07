@@ -1,7 +1,7 @@
 {
     "id": "maxg10/bbs",
     "name": "Meshtastic BBS",
-    "version": "1.0.6",
+    "version": "1.1.0",
     "description": "FidoNet-inspired bulletin board system for Meshtastic mesh networks — bulletin areas, private netmail, node directory, and retro terminal web UI.",
     "author": {
         "name": "Mariusz Gieparda",
@@ -13,7 +13,7 @@
     "documentation": "https://github.com/maxg10/meshplugin-bbs/blob/master/docs/COMMANDS.md",
     "compatibility": {
         "min_mapper_version": "2.2.0",
-        "tested_up_to": "2.6.0"
+        "tested_up_to": "2.7.0"
     },
     "permissions": [
         "mesh_receive",

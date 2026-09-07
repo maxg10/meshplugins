@@ -25,6 +25,7 @@ class BbsPlugin(MeshPlugin):
     def __init__(self):
         super().__init__()
         self._db = None
+        self._version = '0.0.0'
 
     # ── lifecycle ────────────────────────────────────────────────────────────
 
@@ -33,6 +34,16 @@ class BbsPlugin(MeshPlugin):
         self._db = sqlite3.connect(_DB, check_same_thread=False)
         self._db.row_factory = sqlite3.Row
         self._init_schema()
+        # The web viewer (frontend/index.html) talks to us over this channel.
+        # Without registration the core cannot route its plugin_message frames
+        # back to this plugin.
+        self.register_ws_channel('bbs_updates')
+        # Single source of truth for the version the viewer shows.
+        try:
+            with open(os.path.join(os.path.dirname(_HERE), 'plugin.json')) as f:
+                self._version = json.load(f).get('version', '0.0.0')
+        except Exception:
+            pass
         print(f'[BBS] Enabled — db: {_DB}')
 
     def on_disable(self):
@@ -226,9 +237,10 @@ class BbsPlugin(MeshPlugin):
             await self.send_mesh_message(chunk, to_id=from_node, channel=0)
             await asyncio.sleep(0.5)
 
-        await self.broadcast_ws('bbs_updates', json.dumps(
-            {'event': 'command', 'from': from_node, 'cmd': cmd}
-        ))
+        await self.broadcast_ws(
+            {'event': 'command', 'from': from_node, 'cmd': cmd},
+            channel='bbs_updates'
+        )
 
     # ── command implementations ──────────────────────────────────────────────
 
@@ -484,7 +496,7 @@ class BbsPlugin(MeshPlugin):
         name  = self.config.get('bbs_name', 'MeshBBS')
         stats = {
             'bbs_name': name,
-            'version':  '1.0.3',
+            'version':  self._version,
             'messages': self._db.execute('SELECT COUNT(*) FROM messages').fetchone()[0],
             'mail':     self._db.execute('SELECT COUNT(*) FROM mail').fetchone()[0],
             'nodes':    self._db.execute('SELECT COUNT(*) FROM node_directory').fetchone()[0],
@@ -494,6 +506,60 @@ class BbsPlugin(MeshPlugin):
                 'SELECT COUNT(*) FROM messages WHERE area=?', (a,)
             ).fetchone()[0]
         return stats
+
+    # ── web viewer transport ─────────────────────────────────────────────────
+    #
+    # The handlers above were written for register_api_route(), which has no
+    # HTTP server behind it in the core. They are reached over the plugin
+    # WebSocket channel instead: the browser sends
+    #
+    #   {type: 'plugin_message', channel: 'plugin:maxg10/bbs:bbs_updates',
+    #    data: {req: '<id>', action: 'get_messages',
+    #           path_params: {...}, query: {...}, body: {...}}}
+    #
+    # and gets {req: '<id>', result: {...}} or {req: '<id>', error: '...'}
+    # back on the same channel — to that client only, via reply().
+
+    _WS_ACTIONS = {
+        'get_stats':    'get_stats',
+        'get_boards':   'get_boards',
+        'get_messages': 'get_messages',
+        'post_message': 'post_message',
+        'get_mail':     'get_mail',
+        'send_mail':    'send_mail',
+        'get_nodes':    'get_nodes',
+    }
+
+    async def on_ws_request(self, data, channel, reply):
+        req    = data.get('req')
+        action = data.get('action', '')
+        handler = self._WS_ACTIONS.get(action)
+        if not handler:
+            await reply({'req': req, 'error': f'Unknown action: {action}'})
+            return
+
+        request = {
+            'path_params': data.get('path_params') or {},
+            'query':       data.get('query') or {},
+            'body':        data.get('body') or {},
+        }
+        try:
+            result = getattr(self, handler)(request)
+        except Exception as e:
+            print(f'[BBS] {action} failed: {e}')
+            await reply({'req': req, 'error': str(e)})
+            return
+
+        # Handlers signal failure as (payload, status_code)
+        if isinstance(result, tuple):
+            payload, status = result
+            await reply({
+                'req': req,
+                'error': payload.get('error', 'Request failed'),
+                'status': status,
+            })
+        else:
+            await reply({'req': req, 'result': result})
 
     # ── helpers ──────────────────────────────────────────────────────────────
 

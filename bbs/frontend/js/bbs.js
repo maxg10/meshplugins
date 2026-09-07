@@ -3,15 +3,18 @@
 (function () {
   'use strict';
 
-  var API = window.BBS_API_BASE ||
-    (location.pathname.replace(/\/frontend\/.*$/, '') + '/api') ||
-    '/api/plugin/maxg10/bbs';
+  // MeshPulse has no HTTP API server — the core's register_api_route() has
+  // nothing behind it. Everything goes over the mapper's WebSocket instead,
+  // on this plugin's own channel: requests as {type:'plugin_message'},
+  // answers and events back as {type:'plugin_data'} on the same channel.
+  var CHANNEL = 'plugin:maxg10/bbs:bbs_updates';
 
   var WS_URL = window.BBS_WS_URL || (
     (location.protocol === 'https:' ? 'wss:' : 'ws:') +
-    '//' + location.host +
-    '/ws/plugin/maxg10/bbs/bbs_updates'
+    '//' + location.hostname + ':8765'
   );
+
+  var RPC_TIMEOUT = 10000;
 
   // ── state ──────────────────────────────────────────────────────────────────
 
@@ -22,6 +25,9 @@
     totalPages:   1,
     ws:           null,
     wsRetries:    0,
+    rpcSeq:       0,
+    pending:      {},    // req id -> {resolve, reject, timer}
+    outbox:       [],    // frames queued while the socket is not open yet
     stats:        null,
     previousView: 'boards',
   };
@@ -92,25 +98,60 @@
 
   // ── API helpers ────────────────────────────────────────────────────────────
 
-  function apiFetch(path, opts) {
-    return fetch(API + path, opts || {}).then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
+  function wsSend(frame) {
+    if (state.ws && state.ws.readyState === WebSocket.OPEN) {
+      state.ws.send(JSON.stringify(frame));
+    } else {
+      // Sent as soon as the socket opens; also covers a reconnect mid-session.
+      state.outbox.push(frame);
+      connectWS();
+    }
+  }
+
+  function flushOutbox() {
+    var queued = state.outbox;
+    state.outbox = [];
+    queued.forEach(wsSend);
+  }
+
+  // rpc('get_messages', {path_params: {...}, query: {...}, body: {...}})
+  // Resolves with the handler's result, rejects on error or timeout.
+  function rpc(action, params) {
+    return new Promise(function(resolve, reject) {
+      var id    = 'r' + (++state.rpcSeq);
+      var data  = {req: id, action: action};
+      params = params || {};
+      ['path_params', 'query', 'body'].forEach(function(k) {
+        if (params[k]) data[k] = params[k];
+      });
+
+      state.pending[id] = {
+        resolve: resolve,
+        reject:  reject,
+        timer:   setTimeout(function() {
+          delete state.pending[id];
+          reject(new Error('Timed out: ' + action));
+        }, RPC_TIMEOUT)
+      };
+
+      wsSend({type: 'plugin_message', channel: CHANNEL, data: data});
     });
   }
 
-  function apiPost(path, body) {
-    return apiFetch(path, {
-      method:  'POST',
-      headers: {'Content-Type': 'application/json'},
-      body:    JSON.stringify(body),
-    });
+  function settleRpc(payload) {
+    var entry = state.pending[payload.req];
+    if (!entry) return false;
+    clearTimeout(entry.timer);
+    delete state.pending[payload.req];
+    if (payload.error) entry.reject(new Error(payload.error));
+    else               entry.resolve(payload.result);
+    return true;
   }
 
   // ── stats ──────────────────────────────────────────────────────────────────
 
   function loadStats() {
-    return apiFetch('/stats').then(function(data) {
+    return rpc('get_stats').then(function(data) {
       state.stats = data;
       $$('sb-name').textContent  = data.bbs_name + ' v' + data.version;
       $$('sb-stats').textContent = 'Msgs:' + data.messages + '  Mail:' + data.mail + '  Nodes:' + data.nodes;
@@ -143,7 +184,7 @@
   function loadMessages() {
     var area = state.currentArea;
     var page = state.currentPage;
-    apiFetch('/boards/' + area + '/messages?page=' + page + '&limit=20')
+    rpc('get_messages', {path_params: {area: area}, query: {page: page, limit: 20}})
       .then(function(data) {
         renderMessages(data);
         loadStats();
@@ -208,7 +249,8 @@
       setStatus('compose-status', 'Message body is required.', true);
       return;
     }
-    apiPost('/boards/' + state.currentArea + '/messages', {from: from || 'WEB', body: body})
+    rpc('post_message', {path_params: {area: state.currentArea},
+                         body: {from: from || 'WEB', body: body}})
       .then(function() {
         setStatus('compose-status', 'Posted!', false);
         setTimeout(function() {
@@ -223,8 +265,7 @@
   // ── mail ───────────────────────────────────────────────────────────────────
 
   function loadMail(toNode) {
-    var url = '/mail' + (toNode ? '?to=' + encodeURIComponent(toNode) : '');
-    apiFetch(url).then(renderMail).catch(function() {
+    rpc('get_mail', {query: toNode ? {to: toNode} : {}}).then(renderMail).catch(function() {
       $$('mail-list').innerHTML = '<div class="empty-state">Error loading mail.</div>';
     });
   }
@@ -272,7 +313,7 @@
       setStatus('mail-compose-status', 'To and message body are required.', true);
       return;
     }
-    apiPost('/mail', {from: from || 'WEB', to: to, body: body})
+    rpc('send_mail', {body: {from: from || 'WEB', to: to, body: body}})
       .then(function() {
         setStatus('mail-compose-status', 'Mail queued!', false);
         setTimeout(function() {
@@ -288,7 +329,7 @@
   // ── nodes ──────────────────────────────────────────────────────────────────
 
   function loadNodes() {
-    apiFetch('/nodes').then(renderNodes).catch(function() {
+    rpc('get_nodes').then(renderNodes).catch(function() {
       $$('nodes-list').innerHTML = '<div class="empty-state">Error loading nodes.</div>';
     });
   }
@@ -397,6 +438,11 @@
       ws.onopen = function() {
         state.wsRetries = 0;
         setWsStatus(true);
+        // The core currently broadcasts plugin_data to every client and we
+        // filter by channel below, but announce the subscription anyway so
+        // this page stays correct if the core ever starts honouring it.
+        ws.send(JSON.stringify({type: 'subscribe_plugin', channel: CHANNEL}));
+        flushOutbox();
       };
 
       ws.onclose = function() {
@@ -411,14 +457,24 @@
       ws.onerror = function() {};
 
       ws.onmessage = function(evt) {
+        var msg;
         try {
-          var msg = JSON.parse(evt.data);
-          if (msg.event === 'command') {
-            toast('Mesh cmd from ' + (msg.from || '?'));
-            if (state.currentView === 'boards') loadMessages();
-            loadStats();
-          }
-        } catch (e) {}
+          msg = JSON.parse(evt.data);
+        } catch (e) {
+          return;
+        }
+        // The mapper multiplexes everything over one socket — ignore anything
+        // that is not this plugin's traffic.
+        if (msg.type !== 'plugin_data' || msg.channel !== CHANNEL) return;
+
+        var payload = msg.data || {};
+        if (payload.req && settleRpc(payload)) return;
+
+        if (payload.event === 'command') {
+          toast('Mesh cmd from ' + (payload.from || '?'));
+          if (state.currentView === 'boards') loadMessages();
+          loadStats();
+        }
       };
     } catch (e) {
       setWsStatus(false);
@@ -529,9 +585,11 @@
 
   function init() {
     bindEvents();
+    // The socket is the only transport now, so it comes first — requests made
+    // before it opens are queued in the outbox and flushed on connect.
+    connectWS();
     loadStats().then(function() {
       loadMessages();
-      connectWS();
     });
   }
 
