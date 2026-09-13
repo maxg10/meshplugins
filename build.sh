@@ -87,8 +87,15 @@ for dir in "${plugins[@]}"; do
     rm -f "$out"
     (cd "$dir" && zip -r -q "../$out" "${includes[@]}" "${EXCLUDE[@]}")
 
-    # The mapper requires plugin.json at the ZIP root — verify.
-    if ! unzip -l "$out" | grep -q ' plugin\.json$'; then
+    # The mapper requires plugin.json at the ZIP root — verify by reading the
+    # archive, not by grepping `unzip -l`. `grep -q` exits at its first match and
+    # closes the pipe; unzip then dies of SIGPIPE (141) and, under the
+    # `set -o pipefail` at the top of this script, a perfectly good package is
+    # reported as broken. Whether it happens comes down to pipe buffering, so it
+    # failed on macOS and passed on Linux for the same file.
+    if ! python3 -c 'import sys, zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+    sys.exit(0 if "plugin.json" in z.namelist() else 1)' "$out"; then
         echo "ERROR: $out does not contain plugin.json at the ZIP root" >&2
         exit 1
     fi
