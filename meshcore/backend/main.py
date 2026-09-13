@@ -131,6 +131,17 @@ class MeshcorePlugin(MeshPlugin):
             mc = None
             try:
                 mc = await self._connect(MeshCore)
+                if mc is None or getattr(mc, 'self_info', None) is None:
+                    # The library returns a connection that never completed its
+                    # handshake — the port opened, nothing answered. Almost always
+                    # the wrong firmware variant (Repeater or Room Server speak a
+                    # text CLI over USB, not the companion frame protocol), or
+                    # another process reading the same device. Say that, instead
+                    # of letting a NoneType attribute error stand in for it.
+                    raise RuntimeError(
+                        'no usable companion session — check the node runs '
+                        'Companion Radio (USB Serial) firmware and that nothing '
+                        'else holds the port')
                 backoff_idx = 0
                 await self._session(mc, EventType)
             except asyncio.CancelledError:
