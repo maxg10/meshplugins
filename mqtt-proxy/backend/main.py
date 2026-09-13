@@ -32,24 +32,44 @@ class MqttProxyPlugin(MeshPlugin):
         self.node_id = None  # e.g., "!7b6c8272"
 
     def on_enable(self):
-        """Read tracker MQTT config and connect to broker."""
-        print("[MQTT-PROXY] Enabling MQTT Proxy plugin...")
+        """Set up from the tracker if the radio is already up, else wait for it.
 
+        Plugins are enabled while the radio interface is still connecting, so on
+        a cold start the tracker config is simply not there yet. That is not a
+        misconfiguration and must not be reported as one — on_connect below runs
+        the same setup once the link is actually established.
+        """
+        print("[MQTT-PROXY] Enabling MQTT Proxy plugin...")
+        if not self._setup_from_tracker():
+            print("[MQTT-PROXY] Waiting for the tracker connection...")
+
+    async def on_connect(self, connection_info):
+        """Radio link is up — set up now if enabling was too early to."""
+        if self.mqtt_thread and self.mqtt_thread.is_alive():
+            return
+        print("[MQTT-PROXY] Tracker connected — reading MQTT config...")
+        self._setup_from_tracker()
+
+    def _setup_from_tracker(self):
+        """Read the tracker's MQTT module config and start the client.
+
+        Returns:
+            bool: True when the client was started, False when the radio is not
+                ready yet or MQTT is not enabled on the tracker.
+        """
         mqtt_config = self.get_tracker_config('mqtt')
         if not mqtt_config:
-            print("[MQTT-PROXY] ERROR: Could not read MQTT config from tracker")
-            print("[MQTT-PROXY] Make sure tracker is connected and MQTT is enabled in firmware")
-            return
+            return False
 
         if not mqtt_config.get('enabled', False):
             print("[MQTT-PROXY] WARNING: MQTT is not enabled on the tracker")
             print("[MQTT-PROXY] Enable MQTT in Config → MQTT tab first")
-            return
+            return False
 
         if not mqtt_config.get('proxy_to_client_enabled', False):
             print("[MQTT-PROXY] WARNING: 'Proxy to Client' is not enabled on the tracker")
             print("[MQTT-PROXY] Enable 'Proxy to Client' in Config → MQTT tab")
-            return
+            return False
 
         self.broker_address = mqtt_config.get('address', '') or 'mqtt.meshtastic.org'
         self.username = mqtt_config.get('username', '') or None
@@ -76,6 +96,8 @@ class MqttProxyPlugin(MeshPlugin):
         config = self.config
         if config.get('auto_connect', True):
             self._start_mqtt()
+            return True
+        return False
 
     def on_disable(self):
         """Disconnect from MQTT broker."""
