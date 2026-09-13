@@ -1,7 +1,7 @@
 {
     "id": "maxg10/mqtt-proxy",
     "name": "MQTT Proxy",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "MQTT client proxy for trackers without WiFi. Publishes mesh packets to MQTT broker and receives downlink on behalf of the connected tracker.",
     "author": {
         "name": "Mariusz Gieparda",

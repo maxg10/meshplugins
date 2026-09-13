@@ -41,7 +41,11 @@ class MqttProxyPlugin(MeshPlugin):
         """
         print("[MQTT-PROXY] Enabling MQTT Proxy plugin...")
         if not self._setup_from_tracker():
-            print("[MQTT-PROXY] Waiting for the tracker connection...")
+            # Distinguish "the radio is not up yet" from "the radio is up and
+            # says MQTT is off" — the second already printed its own reason, and
+            # telling the user to wait for a connection that exists is noise.
+            if not self.get_tracker_config('mqtt'):
+                print("[MQTT-PROXY] Waiting for the tracker connection...")
 
     async def on_connect(self, connection_info):
         """Radio link is up — set up now if enabling was too early to."""
