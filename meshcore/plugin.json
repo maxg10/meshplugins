@@ -1,7 +1,7 @@
 {
     "id": "maxg10/meshcore",
     "name": "Meshcore",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Show Meshcore network nodes on the MeshPulse map alongside Meshtastic (read-only)",
     "author": {
         "name": "Max Gieparda",
@@ -10,7 +10,7 @@
     "license": "GPL-3.0",
     "compatibility": {
         "min_mapper_version": "2.6.0",
-        "tested_up_to": "2.6.0"
+        "tested_up_to": "2.7.2"
     },
     "permissions": ["node_inject"],
     "backend": {

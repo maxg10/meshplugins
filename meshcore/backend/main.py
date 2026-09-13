@@ -228,12 +228,23 @@ class MeshcorePlugin(MeshPlugin):
                 and not (lat == 0 and lon == 0)):
             node['lat'] = lat
             node['lon'] = lon
+        # Meshcore tracks an outbound routing path per contact: out_path_len 0
+        # means the node is a direct, zero-hop neighbour, >0 counts the repeaters
+        # in between, and -1 means "flood, path not established yet". Exposed as
+        # the generic 'hops_away' so core can measure per-network RF range the
+        # same way it uses Meshtastic 'hops'. -1 stays absent: unknown, not zero.
+        path_len = src.get('out_path_len')
+        if (isinstance(path_len, int) and not isinstance(path_len, bool)
+                and path_len >= 0):
+            node['hops_away'] = path_len
         last_advert = src.get('last_advert')
         if (isinstance(last_advert, (int, float)) and not isinstance(last_advert, bool)
                 and last_advert > MIN_REAL_TIMESTAMP):
             node['mc_last_advert'] = int(last_advert)
         if is_self:
             node['mc_self'] = True
+            node['net_self'] = True      # generic flag core uses to find a network's own node
+            node['hops_away'] = 0
         return node
 
     def _inject(self, src, is_self=False):
