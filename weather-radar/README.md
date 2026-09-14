@@ -7,6 +7,11 @@ Adds an animated precipitation radar layer to the map, sourced from
 available in 10-minute steps, with a time slider, playback controls and a
 timestamp for the frame on screen.
 
+![Weather Radar over a live Meshtastic/Meshcore mesh](screenshot.png)
+
+*Rain cells moving over Austria and Slovenia while the mesh keeps its own
+colours — the radar draws under every node marker and link.*
+
 Frontend-only, no backend. The browser fetches the radar index and the tiles
 directly from RainViewer, so the machine running MeshPulse — very often a small
 Raspberry Pi — does no extra work, gains no extra dependency and carries no
