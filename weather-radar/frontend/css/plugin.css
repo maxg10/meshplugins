@@ -1,0 +1,86 @@
+/* Weather Radar plugin panel — matches the look of the core map controls. */
+
+.weather-radar-panel {
+    background: rgba(15, 23, 42, 0.92);
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    min-width: 186px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.weather-radar-panel .wr-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.weather-radar-panel .wr-body {
+    margin-top: 7px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(229, 231, 235, 0.18);
+}
+
+.weather-radar-panel .wr-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.weather-radar-panel .wr-btn {
+    flex: 0 0 auto;
+    min-width: 24px;
+    padding: 1px 5px;
+    background: rgba(30, 41, 59, 0.95);
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.weather-radar-panel .wr-btn:hover {
+    background: rgba(51, 65, 85, 0.95);
+}
+
+.weather-radar-panel .wr-status {
+    margin-left: auto;
+    padding-left: 6px;
+    font-size: 10px;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.weather-radar-panel .wr-slider {
+    width: 100%;
+    margin: 6px 0 0;
+    accent-color: #38bdf8;
+    cursor: pointer;
+}
+
+/* Touch devices: the core gives buttons in the layers drawer a 44px height,
+   but width and the slider still need help to be thumb-sized (Apple HIG 44px). */
+@media (hover: none) and (pointer: coarse) {
+    .weather-radar-panel .wr-btn {
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 13px;
+    }
+
+    .weather-radar-panel .wr-slider {
+        height: 32px;              /* bigger grab area than the 16px default */
+        margin-top: 4px;
+    }
+
+    .weather-radar-panel .wr-status {
+        font-size: 11px;
+    }
+}

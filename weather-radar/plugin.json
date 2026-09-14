@@ -1,0 +1,91 @@
+{
+    "id": "maxg10/weather-radar",
+    "name": "Weather Radar",
+    "version": "1.0.0",
+    "description": "Animated precipitation radar overlay (RainViewer) with a time slider and playback. Tiles are fetched by the browser, so the Raspberry Pi does no extra work.",
+    "author": {
+        "name": "Mariusz \"Max\" Gieparda",
+        "github": "maxg10",
+        "url": "https://meshpulse.app"
+    },
+    "license": "GPL-3.0",
+    "compatibility": {
+        "min_mapper_version": "2.6.1",
+        "tested_up_to": "2.7.2"
+    },
+    "permissions": ["raw_map_access"],
+    "backend": null,
+    "frontend": {
+        "pages": [],
+        "js": "frontend/js/plugin.js",
+        "css": "frontend/css/plugin.css"
+    },
+    "hooks": [],
+    "api_routes": [],
+    "websocket_channels": [],
+    "dependencies": [],
+    "config": {
+        "default_enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show the radar layer on startup"
+        },
+        "autoplay": {
+            "type": "boolean",
+            "default": true,
+            "description": "Start the animation automatically when the layer is turned on"
+        },
+        "opacity": {
+            "type": "number",
+            "default": 70,
+            "min": 10,
+            "max": 100,
+            "description": "Radar layer opacity (%)"
+        },
+        "color_scheme": {
+            "type": "select",
+            "options": [
+                "Universal Blue",
+                "Original",
+                "Black and White",
+                "TITAN",
+                "The Weather Channel",
+                "Meteored",
+                "NEXRAD Level III",
+                "Rainbow SELEX-IS",
+                "Dark Sky"
+            ],
+            "default": "Universal Blue",
+            "description": "Radar colour scheme"
+        },
+        "smooth": {
+            "type": "boolean",
+            "default": true,
+            "description": "Smooth the radar image instead of showing raw pixels"
+        },
+        "snow": {
+            "type": "boolean",
+            "default": true,
+            "description": "Render snow in its own colours"
+        },
+        "frame_ms": {
+            "type": "number",
+            "default": 500,
+            "min": 100,
+            "max": 3000,
+            "description": "Time each frame stays on screen during playback (ms)"
+        },
+        "max_native_zoom": {
+            "type": "number",
+            "default": 7,
+            "min": 3,
+            "max": 12,
+            "description": "Highest zoom level with real radar tiles; beyond it the last level is upscaled. The free RainViewer API caps this at 7."
+        },
+        "index_url": {
+            "type": "string",
+            "default": "https://api.rainviewer.com/public/weather-maps.json",
+            "description": "Radar index endpoint. Leave as-is for the free public API; replace it with your own URL if you have a commercial RainViewer feed. Note: the browser calls this URL directly, so anything embedded in it (a key, a token) is visible in the browser's developer tools."
+        }
+    }
+}
