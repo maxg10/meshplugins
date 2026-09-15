@@ -1,7 +1,7 @@
 {
     "id": "maxg10/lifelines",
     "name": "Lifelines",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Finds the single points of failure in your mesh: the nodes that, if they went off the air, would cut other nodes off from the network. Frontend only, no backend, no extra traffic.",
     "author": {
         "name": "Mariusz \"Max\" Gieparda",

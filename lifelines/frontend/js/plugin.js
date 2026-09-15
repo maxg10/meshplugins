@@ -14,6 +14,7 @@ var LifelinesPlugin = (function () {
 
     function Lifelines() {
         this.api = null;
+        this.previewInfo = null;
         this.active = false;
         this.panel = null;
         this.layer = null;
@@ -200,21 +201,38 @@ var LifelinesPlugin = (function () {
             });
         }
 
+        // A node in another component was already unreachable and has nothing to
+        // do with this cut point. Only what the anchor could reach BEFORE the
+        // removal can be cut off by it.
+        var wasReachable = Object.create(null);
+        var q2 = [anchor];
+        wasReachable[anchor] = true;
+        while (q2.length) {
+            var u = q2.pop();
+            (adj[u] || []).forEach(function (w) {
+                if (wasReachable[w]) return;
+                wasReachable[w] = true;
+                q2.push(w);
+            });
+        }
+
         var positions = Object.create(null);
         (this.api.nodes.getAll() || []).forEach(function (n) {
             if (n.lat && n.lon) positions[n.id] = [n.lat, n.lon];
         });
 
         var group = L.layerGroup();
-        var orphaned = 0;
+        var orphaned = 0, noPosition = 0;
         Object.keys(adj).forEach(function (id) {
-            if (id === cutId || still[id] || !positions[id]) return;
+            if (id === cutId || still[id] || !wasReachable[id]) return;
             orphaned++;
+            if (!positions[id]) { noPosition++; return; }   // nowhere to draw it
             L.circleMarker(positions[id], {
                 radius: 11, color: '#ef4444', weight: 2, opacity: 0.9,
                 fillColor: '#ef4444', fillOpacity: 0.15, interactive: false
             }).addTo(group);
         });
+        this.previewInfo = {orphaned: orphaned, noPosition: noPosition};
         if (positions[cutId]) {
             L.circleMarker(positions[cutId], {
                 radius: 16, color: '#f59e0b', weight: 3, opacity: 1,
@@ -224,6 +242,15 @@ var LifelinesPlugin = (function () {
         this.layer = group;
         this.api.map.addLayer(LAYER, group);
         return orphaned;
+    };
+
+    // Rings and the number in the list have to agree, and when they cannot —
+    // a node with no position cannot be drawn — the panel says why.
+    Lifelines.prototype._previewHint = function () {
+        var i = this.previewInfo;
+        if (this.selected === null || !i || !i.noPosition) return '';
+        return '<div class="ll-hint">' + i.orphaned + ' cut off, ' + (i.orphaned - i.noPosition) +
+            ' ringed \u2014 ' + i.noPosition + ' of them report no position.</div>';
     };
 
     // ── panel ───────────────────────────────────────────────────────────
@@ -288,6 +315,9 @@ var LifelinesPlugin = (function () {
             '<div class="ll-legend">cut off if it goes silent →</div>' +
             '<div class="ll-list">' + rows + '</div>' +
             (r.cuts.length > 25 ? '<div class="ll-more">+ ' + (r.cuts.length - 25) + ' more</div>' : '');
+
+        var hint = this._previewHint();
+        if (hint) body.insertAdjacentHTML('beforeend', hint);
 
         body.querySelectorAll('.ll-row').forEach(function (btn) {
             btn.addEventListener('click', function () {
