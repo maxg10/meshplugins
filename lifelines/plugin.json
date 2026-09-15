@@ -1,8 +1,8 @@
 {
     "id": "maxg10/lifelines",
     "name": "Lifelines",
-    "version": "1.0.3",
-    "description": "Finds the single points of failure in your mesh: the nodes that, if they went off the air, would cut other nodes off from the network. Frontend only, no backend, no extra traffic.",
+    "version": "1.1.0",
+    "description": "Finds the single points of failure in your mesh: the nodes that, if they went off the air, would cut other nodes off from the network — including your own, which answers the question the rest of the list cannot: what happens to the mesh if you go silent. Frontend only.",
     "author": {
         "name": "Mariusz \"Max\" Gieparda",
         "github": "maxg10",

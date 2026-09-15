@@ -73,3 +73,8 @@
 }
 
 .ll-hint { color: #fcd34d; font-size: 10px; line-height: 1.4; margin-top: 6px; }
+
+/* "What if I go silent" sits above the list: same shape, different question. */
+.ll-self { border-color: rgba(148,163,184,0.35); background: rgba(30,41,59,0.75); margin-bottom: 6px; }
+.ll-self .ll-name { font-style: italic; color: #cbd5e1; }
+.ll-count.ll-ok { background: #16a34a; }

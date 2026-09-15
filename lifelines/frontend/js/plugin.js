@@ -119,6 +119,29 @@ var LifelinesPlugin = (function () {
         return count;
     };
 
+    // What the graph falls into once a node is taken out of it. Restricted to
+    // what that node could reach before, so parts of the mesh that were already
+    // out of touch do not get counted as damage it caused.
+    Lifelines.prototype._componentsWithout = function (adj, gone, universe) {
+        var seen = Object.create(null), parts = [];
+        Object.keys(universe).forEach(function (start) {
+            if (start === gone || seen[start]) return;
+            var part = [], queue = [start];
+            seen[start] = true;
+            while (queue.length) {
+                var v = queue.pop();
+                part.push(v);
+                (adj[v] || []).forEach(function (w) {
+                    if (w === gone || seen[w] || !universe[w]) return;
+                    seen[w] = true;
+                    queue.push(w);
+                });
+            }
+            parts.push(part);
+        });
+        return parts.sort(function (a, b) { return b.length - a.length; });
+    };
+
     Lifelines.prototype.analyse = function () {
         var cfg = this._cfg();
         var g = this._buildGraph();
@@ -168,8 +191,23 @@ var LifelinesPlugin = (function () {
             return b.orphans - a.orphans || b.degree - a.degree;
         });
 
+        // "What if I go silent" — the rest of the graph, with the anchor removed.
+        var universe = Object.create(null);
+        var qr = [anchor];
+        universe[anchor] = true;
+        while (qr.length) {
+            var uu = qr.pop();
+            (g.adj[uu] || []).forEach(function (w) { if (!universe[w]) { universe[w] = true; qr.push(w); } });
+        }
+        var parts = this._componentsWithout(g.adj, anchor, universe);
+        var without = {
+            parts: parts,
+            sizes: parts.map(function (p) { return p.length; }),
+            alone: parts.filter(function (p) { return p.length === 1; }).length
+        };
+
         this.result = {ids: g.ids, edges: g.edges, cuts: cuts, anchor: anchor, anchorIsCut: anchorIsCut,
-                       anchorIsTracker: anchorIsTracker,
+                       anchorIsTracker: anchorIsTracker, without: without,
                        anchorName: names[anchor] || anchor, reach: whole, adj: g.adj};
         this.lastRun = Date.now();
         return this.result;
@@ -182,8 +220,45 @@ var LifelinesPlugin = (function () {
         this.layer = null;
     };
 
+    // The mesh as it would look with the anchor gone: whichever part stays
+    // biggest keeps talking to itself (green), everything else is adrift (red).
+    Lifelines.prototype._previewWithout = function () {
+        this._clearMap();
+        var r = this.result;
+        if (!r || !r.without || !window.L) return;
+        var positions = Object.create(null);
+        (this.api.nodes.getAll() || []).forEach(function (n) {
+            if (n.lat && n.lon) positions[n.id] = [n.lat, n.lon];
+        });
+        var group = L.layerGroup();
+        r.without.parts.forEach(function (part, idx) {
+            var main = idx === 0;
+            part.forEach(function (id) {
+                if (!positions[id]) return;
+                L.circleMarker(positions[id], {
+                    radius: main ? 9 : 11,
+                    color: main ? '#22c55e' : '#ef4444',
+                    weight: main ? 2 : 3, opacity: main ? 0.65 : 0.95,
+                    fillColor: main ? '#22c55e' : '#ef4444',
+                    fillOpacity: main ? 0.08 : 0.18, interactive: false
+                }).addTo(group);
+            });
+        });
+        if (positions[r.anchor]) {
+            L.circleMarker(positions[r.anchor], {
+                radius: 16, color: '#f59e0b', weight: 3, opacity: 1,
+                fillColor: '#f59e0b', fillOpacity: 0.2, interactive: false,
+                dashArray: '5, 5'
+            }).addTo(group);
+        }
+        this.layer = group;
+        this.api.map.addLayer(LAYER, group);
+        this.previewInfo = null;
+    };
+
     // Draw the chosen cut point and everything that depends on it.
     Lifelines.prototype._preview = function (cutId) {
+        if (cutId === 'self') return this._previewWithout();
         this._clearMap();
         if (!cutId || !this.result || !window.L) return;
 
@@ -296,13 +371,44 @@ var LifelinesPlugin = (function () {
               '</div>'
             : '';
 
+        // The "without me" row belongs in both branches: a mesh where nothing else
+        // is a single point of failure is exactly where this question is interesting.
+        var self = this;
+        var w = r.without || {sizes: [], alone: 0};
+        var splits = w.sizes.length;
+        var selfRow =
+            '<button type="button" class="ll-row ll-self' + (this.selected === 'self' ? ' ll-row-on' : '') + '" data-cut="self">' +
+                '<span class="ll-name">if ' + escHtmlLocal(r.anchorName) + ' goes silent</span>' +
+                '<span class="ll-count' + (splits > 1 ? '' : ' ll-ok') + '">' +
+                    (splits > 1 ? splits + ' parts' : 'holds') + '</span>' +
+            '</button>';
+        var selfHint = this.selected !== 'self' ? '' :
+            '<div class="ll-hint">' + (splits > 1
+                ? w.sizes[0] + ' keep each other, ' + w.sizes.slice(1).join(' + ') + ' adrift' +
+                  (w.alone ? ' \u2014 ' + (w.alone === 1
+                      ? '1 of those is a node only your radio reports'
+                      : w.alone + ' of those are nodes only your radio reports') : '')
+                : 'The rest of the graph stays in one piece without you.') + '</div>';
+
+        function wireRows() {
+            body.querySelectorAll('.ll-row').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var id = btn.getAttribute('data-cut');
+                    self.selected = (self.selected === id) ? null : id;
+                    self._preview(self.selected);
+                    self._render();
+                });
+            });
+        }
+
         if (!r.cuts.length) {
-            body.innerHTML = head + note + '<div class="ll-empty ll-good">Every other node on the graph ' +
+            body.innerHTML = head + note + selfRow + selfHint +
+                '<div class="ll-empty ll-good">Every other node on the graph ' +
                 'has more than one way home. Nothing here can split the mesh on its own.</div>';
+            wireRows();
             return;
         }
 
-        var self = this;
         var rows = r.cuts.slice(0, 25).map(function (c) {
             return '<button type="button" class="ll-row' + (self.selected === c.id ? ' ll-row-on' : '') + '" ' +
                 'data-cut="' + escAttr(c.id) + '">' +
@@ -311,7 +417,7 @@ var LifelinesPlugin = (function () {
                 '</button>';
         }).join('');
 
-        body.innerHTML = head + note +
+        body.innerHTML = head + note + selfRow + selfHint +
             '<div class="ll-legend">cut off if it goes silent →</div>' +
             '<div class="ll-list">' + rows + '</div>' +
             (r.cuts.length > 25 ? '<div class="ll-more">+ ' + (r.cuts.length - 25) + ' more</div>' : '');
@@ -319,14 +425,7 @@ var LifelinesPlugin = (function () {
         var hint = this._previewHint();
         if (hint) body.insertAdjacentHTML('beforeend', hint);
 
-        body.querySelectorAll('.ll-row').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var id = btn.getAttribute('data-cut');
-                self.selected = (self.selected === id) ? null : id;
-                self._preview(self.selected);
-                self._render();
-            });
-        });
+        wireRows();
     };
 
     function escHtmlLocal(s) {
