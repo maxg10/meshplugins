@@ -132,6 +132,7 @@ var LifelinesPlugin = (function () {
         // most links — "cut off" only means anything relative to somewhere.
         var tracker = this.api.nodes.getTracker && this.api.nodes.getTracker();
         var anchor = (tracker && g.adj[tracker.id]) ? tracker.id : null;
+        var anchorIsTracker = !!anchor;
         if (!anchor) {
             anchor = g.ids.reduce(function (best, id) {
                 return (!best || (g.adj[id] || []).length > (g.adj[best] || []).length) ? id : best;
@@ -167,6 +168,7 @@ var LifelinesPlugin = (function () {
         });
 
         this.result = {ids: g.ids, edges: g.edges, cuts: cuts, anchor: anchor, anchorIsCut: anchorIsCut,
+                       anchorIsTracker: anchorIsTracker,
                        anchorName: names[anchor] || anchor, reach: whole, adj: g.adj};
         this.lastRun = Date.now();
         return this.result;
@@ -254,11 +256,17 @@ var LifelinesPlugin = (function () {
             '<b>' + r.ids.length + '</b> nodes on the graph · ' +
             '<b>' + r.edges + '</b> links · ' +
             '<b>' + r.cuts.length + '</b> single point' + (r.cuts.length === 1 ? '' : 's') + ' of failure' +
+            '<br>measured from <b>' + escHtmlLocal(r.anchorName) + '</b>' +
+            (r.anchorIsTracker ? ' \u2014 your node' : ' \u2014 the busiest node here; your own has no reported links') +
             '</div>';
 
         var note = r.anchorIsCut
             ? '<div class="ll-note">\u26A0 Parts of this graph reach each other only through ' +
-              escHtmlLocal(r.anchorName) + ' \u2014 your own node. There is no way around you.</div>'
+              escHtmlLocal(r.anchorName) +
+              (r.anchorIsTracker
+                  ? ' \u2014 your own node. There is no way around you.'
+                  : ', the node everything is measured from. Those parts have no other route to it.') +
+              '</div>'
             : '';
 
         if (!r.cuts.length) {
