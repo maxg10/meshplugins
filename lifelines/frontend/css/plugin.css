@@ -1,0 +1,58 @@
+/* Lifelines — MeshPulse plugin
+   Copyright (C) 2025-2026 Mariusz "Max" Gieparda · GPL-3.0
+   The core owns the panel's position; everything here is inside it. */
+
+.ll-panel {
+    background: rgba(17, 24, 39, 0.92);
+    color: #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 10px 10px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    min-width: 210px;
+    max-width: 260px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+    box-sizing: border-box;
+}
+.ll-head { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; }
+.ll-body:not(:empty) { margin-top: 8px; }
+.ll-stats { color: #9ca3af; font-size: 11px; line-height: 1.5; margin-bottom: 6px; }
+.ll-stats b { color: #e5e7eb; }
+.ll-legend { color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+
+.ll-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    width: 100%; margin: 2px 0; padding: 5px 7px;
+    background: rgba(55, 65, 81, 0.55);
+    border: 1px solid transparent; border-radius: 5px;
+    color: #e5e7eb; font-size: 11px; font-family: inherit; text-align: left; cursor: pointer;
+}
+.ll-row:hover { background: rgba(75, 85, 99, 0.75); }
+.ll-row-on { border-color: #f59e0b; background: rgba(120, 53, 15, 0.55); }
+.ll-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ll-name em { color: #9ca3af; font-style: normal; }
+.ll-count {
+    flex: none; min-width: 22px; text-align: center;
+    background: #ef4444; color: #fff; border-radius: 9px; padding: 1px 6px; font-weight: 700;
+}
+.ll-row-on .ll-count { background: #f59e0b; color: #111827; }
+.ll-empty { color: #9ca3af; font-size: 11px; line-height: 1.5; }
+.ll-good { color: #86efac; }
+.ll-more { color: #6b7280; font-size: 10px; margin-top: 4px; }
+
+/* Phones: the panel lives in the Map Layers drawer and can use the width. */
+@media (max-width: 768px) {
+    .ll-panel { max-width: none; width: 100%; }
+    .ll-row { padding: 9px 10px; font-size: 12px; }
+}
+
+.ll-note {
+    color: #fcd34d;
+    background: rgba(120, 53, 15, 0.35);
+    border-left: 2px solid #f59e0b;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1.45;
+    padding: 5px 7px;
+    margin-bottom: 6px;
+}
