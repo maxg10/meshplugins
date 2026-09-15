@@ -1,7 +1,7 @@
 {
     "id": "maxg10/lifelines",
     "name": "Lifelines",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Finds the single points of failure in your mesh: the nodes that, if they went off the air, would cut other nodes off from the network — including your own, which answers the question the rest of the list cannot: what happens to the mesh if you go silent. Frontend only.",
     "author": {
         "name": "Mariusz \"Max\" Gieparda",
@@ -50,6 +50,11 @@
             "min": 2000,
             "max": 120000,
             "description": "Shortest time between recomputations when reports keep arriving (ms)"
+        },
+        "zoom_to_selection": {
+            "type": "boolean",
+            "default": true,
+            "description": "Move the map to whatever you just highlighted. A mesh spans provinces; a ring off-screen helps nobody."
         }
     }
 }

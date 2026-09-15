@@ -215,6 +215,35 @@ var LifelinesPlugin = (function () {
 
     // ── map ─────────────────────────────────────────────────────────────
 
+    // A red ring among 600 coloured dots is just another dot. Three things fix
+    // that: a dark casing underneath so the colour stops blending into the map
+    // (the same trick the core uses for mesh lines), motion — nothing else on
+    // this map moves — and putting the result in the viewport at all.
+    Lifelines.prototype._ring = function (group, latlng, opts) {
+        L.circleMarker(latlng, {
+            radius: opts.radius + 1, color: '#0b1220', weight: 6,
+            opacity: 0.55, fill: false, interactive: false
+        }).addTo(group);
+        L.circleMarker(latlng, {
+            radius: opts.radius, color: opts.color, weight: opts.weight || 2.5,
+            opacity: 0.95, fillColor: opts.color, fillOpacity: opts.fillOpacity || 0.15,
+            interactive: false, className: opts.pulse ? 'll-pulse' : ''
+        }).addTo(group);
+    };
+
+    // Bring what was just highlighted into view. Mesh networks span provinces;
+    // a perfect ring 200km off-screen helps nobody.
+    Lifelines.prototype._frame = function (points) {
+        if (!points.length) return;
+        var cfg = (this.api.info && this.api.info.config) || {};
+        if (cfg.zoom_to_selection === false) return;
+        var map = this.api.map.getLeafletMap && this.api.map.getLeafletMap();
+        if (!map) return;
+        try {
+            map.fitBounds(L.latLngBounds(points), {padding: [60, 60], maxZoom: 12, animate: true});
+        } catch (e) { /* a single point or a broken bound is not worth failing over */ }
+    };
+
     Lifelines.prototype._clearMap = function () {
         if (this.layer && this.api.map.hasLayer(LAYER)) this.api.map.removeLayer(LAYER);
         this.layer = null;
@@ -231,28 +260,39 @@ var LifelinesPlugin = (function () {
             if (n.lat && n.lon) positions[n.id] = [n.lat, n.lon];
         });
         var group = L.layerGroup();
+        var self = this, frame = [], adrift = 0;
         r.without.parts.forEach(function (part, idx) {
-            var main = idx === 0;
+            if (idx === 0) {
+                // The survivors get a quiet green: they are the good news, not the point.
+                part.forEach(function (id) {
+                    if (!positions[id]) return;
+                    L.circleMarker(positions[id], {
+                        radius: 9, color: '#22c55e', weight: 2, opacity: 0.6,
+                        fillColor: '#22c55e', fillOpacity: 0.08, interactive: false
+                    }).addTo(group);
+                });
+                return;
+            }
+            part.forEach(function (id) { if (positions[id]) adrift++; });
+        });
+        var pulse = adrift <= 60;
+        r.without.parts.slice(1).forEach(function (part) {
             part.forEach(function (id) {
                 if (!positions[id]) return;
-                L.circleMarker(positions[id], {
-                    radius: main ? 9 : 11,
-                    color: main ? '#22c55e' : '#ef4444',
-                    weight: main ? 2 : 3, opacity: main ? 0.65 : 0.95,
-                    fillColor: main ? '#22c55e' : '#ef4444',
-                    fillOpacity: main ? 0.08 : 0.18, interactive: false
-                }).addTo(group);
+                self._ring(group, positions[id], {radius: 11, color: '#ef4444', weight: 3,
+                                                  fillOpacity: 0.18, pulse: pulse});
+                frame.push(positions[id]);
             });
         });
         if (positions[r.anchor]) {
-            L.circleMarker(positions[r.anchor], {
-                radius: 16, color: '#f59e0b', weight: 3, opacity: 1,
-                fillColor: '#f59e0b', fillOpacity: 0.2, interactive: false,
-                dashArray: '5, 5'
-            }).addTo(group);
+            self._ring(group, positions[r.anchor], {radius: 16, color: '#f59e0b', weight: 3.5,
+                                                    fillOpacity: 0.2, pulse: true});
+            frame.push(positions[r.anchor]);
         }
         this.layer = group;
         this.api.map.addLayer(LAYER, group);
+        // Nothing adrift means nothing to fly to — the anchor alone is not a view.
+        if (frame.length > 1) this._frame(frame);
         this.previewInfo = null;
     };
 
@@ -297,25 +337,30 @@ var LifelinesPlugin = (function () {
         });
 
         var group = L.layerGroup();
-        var orphaned = 0, noPosition = 0;
+        var orphaned = 0, noPosition = 0, frame = [];
+        var self = this;
+        var cut = [];
         Object.keys(adj).forEach(function (id) {
             if (id === cutId || still[id] || !wasReachable[id]) return;
             orphaned++;
             if (!positions[id]) { noPosition++; return; }   // nowhere to draw it
-            L.circleMarker(positions[id], {
-                radius: 11, color: '#ef4444', weight: 2, opacity: 0.9,
-                fillColor: '#ef4444', fillOpacity: 0.15, interactive: false
-            }).addTo(group);
+            cut.push(positions[id]);
+        });
+        // Animating a hundred rings costs more than it communicates.
+        var pulse = cut.length <= 60;
+        cut.forEach(function (ll) {
+            self._ring(group, ll, {radius: 11, color: '#ef4444', pulse: pulse});
+            frame.push(ll);
         });
         this.previewInfo = {orphaned: orphaned, noPosition: noPosition};
         if (positions[cutId]) {
-            L.circleMarker(positions[cutId], {
-                radius: 16, color: '#f59e0b', weight: 3, opacity: 1,
-                fillColor: '#f59e0b', fillOpacity: 0.2, interactive: false
-            }).addTo(group);
+            this._ring(group, positions[cutId], {radius: 16, color: '#f59e0b', weight: 3.5,
+                                                 fillOpacity: 0.2, pulse: true});
+            frame.push(positions[cutId]);
         }
         this.layer = group;
         this.api.map.addLayer(LAYER, group);
+        this._frame(frame);
         return orphaned;
     };
 

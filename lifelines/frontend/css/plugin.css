@@ -78,3 +78,17 @@
 .ll-self { border-color: rgba(148,163,184,0.35); background: rgba(30,41,59,0.75); margin-bottom: 6px; }
 .ll-self .ll-name { font-style: italic; color: #cbd5e1; }
 .ll-count.ll-ok { background: #16a34a; }
+
+/* The highlight has to win against a map already full of coloured dots. Motion
+   is the one thing nothing else on this map does — but it is also the one thing
+   some people switch off system-wide, so the ring stays legible without it. */
+@keyframes ll-pulse {
+    0%   { stroke-width: 2.5; stroke-opacity: 0.95; }
+    50%  { stroke-width: 8;   stroke-opacity: 0.30; }
+    100% { stroke-width: 2.5; stroke-opacity: 0.95; }
+}
+.ll-pulse { animation: ll-pulse 1.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ll-pulse { animation: none; stroke-width: 5; }
+}
