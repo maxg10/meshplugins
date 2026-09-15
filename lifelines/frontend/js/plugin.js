@@ -231,6 +231,13 @@ var LifelinesPlugin = (function () {
         var body = this.panel.querySelector('.ll-body');
         if (!body) return;
 
+        var badge = this.panel.querySelector('.ll-badge');
+        if (badge) {
+            var n = (this.active && this.result) ? this.result.cuts.length : null;
+            badge.hidden = (n === null);
+            badge.textContent = n === null ? '' : n;
+            badge.title = n === null ? '' : n + ' single point' + (n === 1 ? '' : 's') + ' of failure';
+        }
         if (!this.active) { body.innerHTML = ''; return; }
 
         var r = this.result;
@@ -270,7 +277,8 @@ var LifelinesPlugin = (function () {
         }).join('');
 
         body.innerHTML = head + note +
-            '<div class="ll-legend">cut off if it goes silent →</div>' + rows +
+            '<div class="ll-legend">cut off if it goes silent →</div>' +
+            '<div class="ll-list">' + rows + '</div>' +
             (r.cuts.length > 25 ? '<div class="ll-more">+ ' + (r.cuts.length - 25) + ' more</div>' : '');
 
         body.querySelectorAll('.ll-row').forEach(function (btn) {
@@ -326,9 +334,29 @@ var LifelinesPlugin = (function () {
         var panel = document.createElement('div');
         panel.className = 'leaflet-control ll-panel';
         panel.innerHTML =
-            '<label class="ll-head"><input type="checkbox" class="ll-toggle"> 🩺 Lifelines</label>' +
+            '<div class="ll-head">' +
+                '<label class="ll-title"><input type="checkbox" class="ll-toggle"> 🩺 Lifelines</label>' +
+                '<span class="ll-badge" hidden></span>' +
+                '<button type="button" class="ll-fold" aria-expanded="true" title="Collapse">▾</button>' +
+            '</div>' +
             '<div class="ll-body"></div>';
         this.panel = panel;
+
+        // 23 cut points on a real mesh is a lot of rows; the panel folds away and
+        // keeps only its count, which is the part you glance at anyway.
+        var fold = panel.querySelector('.ll-fold');
+        var foldKey = 'plugin:maxg10/lifelines:folded';
+        function applyFold(folded) {
+            panel.classList.toggle('ll-folded', folded);
+            fold.textContent = folded ? '▸' : '▾';
+            fold.setAttribute('aria-expanded', folded ? 'false' : 'true');
+            fold.title = folded ? 'Expand' : 'Collapse';
+            try { localStorage.setItem(foldKey, folded ? '1' : '0'); } catch (e) { /* ignore */ }
+        }
+        var foldedStart = false;
+        try { foldedStart = localStorage.getItem(foldKey) === '1'; } catch (e) { /* ignore */ }
+        applyFold(foldedStart);
+        fold.addEventListener('click', function () { applyFold(!panel.classList.contains('ll-folded')); });
 
         var toggle = panel.querySelector('.ll-toggle');
         var stored = null;

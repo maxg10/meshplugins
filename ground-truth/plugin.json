@@ -1,7 +1,7 @@
 {
     "id": "maxg10/ground-truth",
     "name": "Ground Truth",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Compares every link and direct node against its own past and reports the ones that quietly lost signal — water in a connector, a shifted mast, a tree that grew. Reads the mapper's own history; writes nothing.",
     "author": {
         "name": "Mariusz \"Max\" Gieparda",
@@ -13,8 +13,12 @@
         "min_mapper_version": "2.6.1",
         "tested_up_to": "2.8.0"
     },
-    "permissions": ["raw_map_access"],
-    "backend": "backend/main.py",
+    "permissions": [
+        "raw_map_access"
+    ],
+    "backend": {
+        "entry_point": "backend/main.py"
+    },
     "frontend": {
         "pages": [],
         "js": "frontend/js/plugin.js",
@@ -22,7 +26,9 @@
     },
     "hooks": [],
     "api_routes": [],
-    "websocket_channels": ["groundtruth"],
+    "websocket_channels": [
+        "groundtruth"
+    ],
     "dependencies": [],
     "config": {
         "stats_db_path": {

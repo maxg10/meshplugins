@@ -14,7 +14,22 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
     box-sizing: border-box;
 }
-.ll-head { display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; }
+.ll-head { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.ll-title { display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1; }
+.ll-badge {
+    flex: none; background: #ef4444; color: #fff; border-radius: 9px;
+    padding: 1px 7px; font-size: 10px; font-weight: 700;
+}
+.ll-fold {
+    flex: none; background: none; border: none; color: #9ca3af;
+    font-size: 12px; line-height: 1; padding: 4px 2px; cursor: pointer; font-family: inherit;
+}
+.ll-fold:hover { color: #f3f4f6; }
+.ll-panel.ll-folded .ll-body { display: none; }
+
+/* 23 cut points is a realistic number on a real mesh, and 23 rows is most of a
+   laptop screen. The list scrolls inside the panel instead of over the map. */
+.ll-list { max-height: 45vh; overflow-y: auto; overscroll-behavior: contain; }
 .ll-body:not(:empty) { margin-top: 8px; }
 .ll-stats { color: #9ca3af; font-size: 11px; line-height: 1.5; margin-bottom: 6px; }
 .ll-stats b { color: #e5e7eb; }
