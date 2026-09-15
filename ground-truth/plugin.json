@@ -1,0 +1,72 @@
+{
+    "id": "maxg10/ground-truth",
+    "name": "Ground Truth",
+    "version": "1.0.0",
+    "description": "Compares every link and direct node against its own past and reports the ones that quietly lost signal — water in a connector, a shifted mast, a tree that grew. Reads the mapper's own history; writes nothing.",
+    "author": {
+        "name": "Mariusz \"Max\" Gieparda",
+        "github": "maxg10",
+        "url": "https://meshpulse.app"
+    },
+    "license": "GPL-3.0",
+    "compatibility": {
+        "min_mapper_version": "2.6.1",
+        "tested_up_to": "2.8.0"
+    },
+    "permissions": ["raw_map_access"],
+    "backend": "backend/main.py",
+    "frontend": {
+        "pages": [],
+        "js": "frontend/js/plugin.js",
+        "css": "frontend/css/plugin.css"
+    },
+    "hooks": [],
+    "api_routes": [],
+    "websocket_channels": ["groundtruth"],
+    "dependencies": [],
+    "config": {
+        "stats_db_path": {
+            "type": "string",
+            "default": "/var/www/html/meshpulse/stats.db",
+            "description": "Where the mapper keeps its history. Opened read-only; nothing is ever written to it. Change this only if your web root is elsewhere (Docker, custom install)."
+        },
+        "baseline_days": {
+            "type": "number",
+            "default": 30,
+            "min": 7,
+            "max": 365,
+            "description": "How far back 'how it used to be' reaches (days)"
+        },
+        "recent_days": {
+            "type": "number",
+            "default": 3,
+            "min": 1,
+            "max": 30,
+            "description": "How recent 'how it is now' is (days)"
+        },
+        "drop_db": {
+            "type": "number",
+            "default": 4,
+            "min": 1,
+            "max": 30,
+            "description": "Report a link only after it has lost at least this many dB"
+        },
+        "min_samples": {
+            "type": "number",
+            "default": 20,
+            "min": 5,
+            "max": 1000,
+            "description": "Measurements required in each window before a verdict is offered"
+        },
+        "include_nodes": {
+            "type": "boolean",
+            "default": true,
+            "description": "Also check the nodes your own radio hears directly (zero hops)"
+        },
+        "default_enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Run the check as soon as the map loads"
+        }
+    }
+}
