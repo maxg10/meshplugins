@@ -236,6 +236,9 @@ var WeatherOverlayPlugin = (function () {
         if (!window.L || !L.heatLayer) {
             var script = document.createElement('script');
             script.src = 'https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js';
+            // Pinned and hashed: a changed file on the CDN is refused, not run.
+            script.integrity = 'sha384-mFKkGiGvT5vo1fEyGCD3hshDdKmW3wzXW/x+fWriYJArD0R3gawT6lMvLboM22c0';
+            script.crossOrigin = 'anonymous';
             script.onload = function() {
                 console.log('[WeatherOverlay] Leaflet.heat loaded');
                 self._render();

@@ -12,7 +12,7 @@
     "homepage": "https://github.com/maxg10/meshplugin-elevation-map",
     "compatibility": {
         "min_mapper_version": "2.2.0",
-        "tested_up_to": "2.6.1"
+        "tested_up_to": "2.9.1"
     },
     "permissions": [
         "raw_map_access"
