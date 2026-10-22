@@ -34,7 +34,8 @@ has been sitting than that can explain:
 - "where it has been sitting" is a running average of its recent fixes, not one
   noisy fix;
 - the threshold is `min_move_m` (100 m by default), or 1.5 grid cells for a
-  rounded position, whichever is larger.
+  rounded position, whichever is larger. On a real mesh most nodes round:
+  precision 13 (a 5.8 km grid) is common on public channels.
 
 Nodes that never move stay out of the panel and off the overlay. They are
 already on the map.
@@ -56,10 +57,10 @@ not show, while a drive between districts will.
 
 ## What it stores
 
-Its own `data.db` in the plugin directory. Nothing in the core's `stats.db` is
-touched. A fix is stored when the node moved, or as a heartbeat every
-30 minutes, so a router reporting every 15 minutes costs two rows an hour
-instead of four. History older than `retention_days` (7 by default, up to 30) is
+Its own `data/trails.db` in the plugin directory, which survives plugin
+updates. Nothing in the core's `stats.db` is touched. A fix is stored when the
+node moved, or as a heartbeat every 30 minutes, so a router reporting every
+15 minutes costs two rows an hour instead of four. History older than `retention_days` (7 by default, up to 30) is
 pruned hourly in small chunks.
 
 New movements are pushed to open maps as they arrive, so Vectors and Trails
@@ -77,9 +78,10 @@ update live.
 ## Requirements
 
 MeshPulse **2.6.1** or newer. On **2.9.1+** the core passes the GPS speed,
-heading and position precision the node sent; on older cores Trails estimates
-speed and direction from consecutive fixes, and uses `min_move_m` alone as the
-noise threshold.
+heading and position precision the node sent. On older cores Trails estimates
+speed and direction from consecutive fixes, and reads the position precision
+off the coordinates themselves: the firmware rounds a position to the middle
+of its grid cell, which leaves a recognisable pattern in the low bits.
 
 ## License
 

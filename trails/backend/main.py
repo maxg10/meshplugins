@@ -20,7 +20,7 @@ Two problems decide most of the design:
   so a fix is stored only when the node moved, or as a heartbeat every
   30 minutes so a replay still knows the node was there.
 
-Nothing in the core's stats.db is touched. Everything lives in data.db.
+Nothing in the core's stats.db is touched. Everything lives in data/trails.db.
 """
 
 import math
@@ -76,6 +76,30 @@ def precision_cell_m(bits):
     return (2 ** (32 - bits)) * 1e-7 * EARTH_M_PER_DEG
 
 
+def infer_precision_bits(lat, lon):
+    """Read the precision a rounded position was sent with off the position itself.
+
+    Cores before 2.9.1 do not pass precision_bits to plugins. The firmware
+    rounds by keeping the top `bits` of the 32-bit integer and moving the
+    result to the middle of its cell, which leaves bit (31 - bits) as the
+    lowest bit set. Both coordinates are rounded the same way, so both must
+    agree before a grid is assumed: a full-precision coordinate has its
+    lowest set bit near the bottom, and two of them high up by chance is
+    rare and then only means a few metres of grid.
+
+    Returns the bits, or None for a position that looks unrounded.
+    """
+    found = []
+    for v in (lat, lon):
+        i = int(round(float(v) * 1e7)) & 0xFFFFFFFF
+        if i == 0:
+            return None
+        lowest = (i & -i).bit_length() - 1
+        found.append(31 - lowest)
+    bits = max(found)
+    return bits if 0 < bits < 28 else None
+
+
 class TrailsPlugin(MeshPlugin):
 
     def __init__(self):
@@ -124,12 +148,18 @@ class TrailsPlugin(MeshPlugin):
     # ── db ──────────────────────────────────────────────────────────────
 
     def _open(self):
-        path = os.path.join(self.plugin_dir, 'data.db')
+        # In data/, not data.db beside the code: plugin upgrades have kept the
+        # data/ directory since 2.7.2, while data.db only survives from 2.9.1.
+        data_dir = os.path.join(self.plugin_dir, 'data')
+        os.makedirs(data_dir, exist_ok=True)
+        path = os.path.join(data_dir, 'trails.db')
         # Hooks and browser requests can arrive on different threads; one
         # connection guarded by a lock is simpler than one per thread.
         db = sqlite3.connect(path, timeout=5, check_same_thread=False)
         db.execute('PRAGMA journal_mode=WAL')
         db.execute('PRAGMA synchronous=NORMAL')
+        # The WAL is reused, not shrunk; keep it from sitting at its high-water mark on the SD card.
+        db.execute('PRAGMA journal_size_limit=1048576')
         db.execute('''CREATE TABLE IF NOT EXISTS fixes (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         node_id TEXT NOT NULL,
@@ -191,6 +221,8 @@ class TrailsPlugin(MeshPlugin):
 
         ts = int(p.get('timestamp') or now or time.time())
         bits = p.get('precision_bits')
+        if not bits:
+            bits = infer_precision_bits(lat, lon)
         anchor = self._anchor.get(node_id)
         prev = self._prev.get(node_id)
         if prev is not None and ts <= prev[0]:
