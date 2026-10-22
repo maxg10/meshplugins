@@ -1,0 +1,81 @@
+/* Trails — MeshPulse plugin
+   Copyright (C) 2026 Mariusz "Max" Gieparda · GPL-3.0 */
+
+.tr-panel {
+    background: rgba(17, 24, 39, 0.92);
+    color: #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 10px 10px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    width: 270px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+    box-sizing: border-box;
+}
+.tr-head { font-weight: 600; margin-bottom: 6px; }
+
+.tr-modes {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+    background: rgba(55, 65, 81, 0.6); border-radius: 6px; padding: 2px;
+}
+.tr-mode, .tr-chip, .tr-play {
+    font-family: inherit; color: #d1d5db; background: transparent;
+    border: none; border-radius: 4px; cursor: pointer;
+}
+.tr-mode { padding: 5px 2px; font-size: 11px; white-space: nowrap; }
+.tr-mode:hover, .tr-chip:hover { background: rgba(75, 85, 99, 0.7); }
+.tr-mode.tr-on, .tr-chip.tr-on { background: #1d4ed8; color: #fff; }
+
+.tr-row { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+.tr-between { justify-content: space-between; }
+.tr-chip { padding: 3px 8px; font-size: 11px; background: rgba(55, 65, 81, 0.6); }
+.tr-speed { padding: 3px 5px; font-size: 10px; }
+
+.tr-player { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+.tr-play {
+    flex: none; width: 30px; height: 26px; font-size: 12px;
+    background: #1d4ed8; color: #fff;
+}
+.tr-play:disabled { background: #374151; color: #9ca3af; cursor: default; }
+.tr-slider { flex: 1; min-width: 0; accent-color: #3b82f6; }
+.tr-clock { font-variant-numeric: tabular-nums; font-weight: 600; color: #f9fafb; }
+
+.tr-body { margin-top: 8px; }
+.tr-note { color: #9ca3af; font-size: 11px; line-height: 1.5; margin-bottom: 6px; }
+.tr-note b { color: #e5e7eb; }
+.tr-bad { color: #fca5a5; }
+
+.tr-list { max-height: 210px; overflow-y: auto; }
+.tr-mover {
+    display: flex; align-items: center; gap: 7px;
+    width: 100%; margin: 2px 0; padding: 5px 7px;
+    background: rgba(55, 65, 81, 0.55); border: 1px solid transparent; border-radius: 5px;
+    color: #e5e7eb; font-size: 11px; font-family: inherit; text-align: left; cursor: pointer;
+}
+.tr-mover:hover { background: rgba(75, 85, 99, 0.75); }
+.tr-mover.tr-on { border-color: #3b82f6; background: rgba(30, 58, 138, 0.55); }
+.tr-swatch { flex: none; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6); }
+.tr-name-l { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tr-right { flex: none; color: #9ca3af; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* On the map */
+.tr-label { background: none; border: none; }
+.tr-label span {
+    display: inline-block; transform: translate(6px, -50%);
+    background: rgba(17, 24, 39, 0.88); color: #f9fafb;
+    font: 600 11px/1 Arial, sans-serif; padding: 3px 6px; border-radius: 4px;
+    white-space: nowrap; pointer-events: none;
+}
+.leaflet-tooltip.tr-name {
+    background: rgba(17, 24, 39, 0.88); color: #f9fafb; border: none;
+    font: 600 11px Arial, sans-serif; padding: 2px 6px; box-shadow: none;
+}
+.leaflet-tooltip.tr-name::before { display: none; }
+
+@media (max-width: 768px) {
+    .tr-panel { width: 100%; }
+    .tr-mode { padding: 9px 2px; font-size: 12px; }
+    .tr-chip { padding: 7px 10px; font-size: 12px; }
+    .tr-mover { padding: 9px 10px; font-size: 12px; }
+    .tr-play { width: 40px; height: 34px; }
+}

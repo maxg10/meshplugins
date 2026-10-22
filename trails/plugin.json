@@ -1,0 +1,66 @@
+{
+    "id": "maxg10/trails",
+    "name": "Trails",
+    "version": "1.0.0",
+    "description": "Where moving nodes are heading, where they have been, and a replay of it all. Arrows show speed and direction, trails show the last 1, 6 or 24 hours, and Replay plays back up to a week on a timeline. Stationary nodes stay out of the way.",
+    "author": {
+        "name": "Mariusz \"Max\" Gieparda",
+        "github": "maxg10",
+        "url": "https://meshpulse.app"
+    },
+    "license": "GPL-3.0",
+    "compatibility": {
+        "min_mapper_version": "2.6.1",
+        "tested_up_to": "2.9.1"
+    },
+    "permissions": [
+        "raw_map_access"
+    ],
+    "backend": {
+        "entry_point": "backend/main.py"
+    },
+    "frontend": {
+        "pages": [],
+        "js": "frontend/js/plugin.js",
+        "css": "frontend/css/plugin.css"
+    },
+    "hooks": [
+        "on_position"
+    ],
+    "api_routes": [],
+    "websocket_channels": [
+        "trails"
+    ],
+    "dependencies": [],
+    "config": {
+        "retention_days": {
+            "type": "number",
+            "default": 7,
+            "min": 1,
+            "max": 30,
+            "description": "How many days of fixes to keep for trails and replay"
+        },
+        "min_move_m": {
+            "type": "number",
+            "default": 100,
+            "min": 10,
+            "max": 1000,
+            "description": "A fix closer than this to where the node has been sitting is GPS noise, not movement (metres). Rounded positions use the larger of this and their grid size."
+        },
+        "include_mqtt": {
+            "type": "boolean",
+            "default": true,
+            "description": "Also record positions that arrive over MQTT (nodes your radio cannot hear)"
+        },
+        "default_mode": {
+            "type": "select",
+            "default": "off",
+            "options": [
+                "off",
+                "vectors",
+                "trails"
+            ],
+            "description": "What the panel shows when the map loads (Replay always starts on demand)"
+        }
+    }
+}
