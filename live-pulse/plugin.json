@@ -1,0 +1,57 @@
+{
+    "id": "maxg10/live-pulse",
+    "name": "Live Pulse",
+    "version": "1.0.0",
+    "description": "Radio traffic as it happens: a pulse on the node that just transmitted and a glowing arc along the part of its path your radio can actually see. Drawn in the browser, so the Raspberry Pi does no extra work.",
+    "author": {
+        "name": "Mariusz \"Max\" Gieparda",
+        "github": "maxg10",
+        "url": "https://meshpulse.app"
+    },
+    "license": "GPL-3.0",
+    "compatibility": {
+        "min_mapper_version": "2.9.3",
+        "tested_up_to": "2.9.3"
+    },
+    "permissions": ["raw_map_access"],
+    "backend": null,
+    "frontend": {
+        "pages": [],
+        "js": "frontend/js/plugin.js",
+        "css": "frontend/css/plugin.css"
+    },
+    "hooks": [],
+    "api_routes": [],
+    "websocket_channels": [],
+    "dependencies": [],
+    "config": {
+        "default_enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show live traffic on startup"
+        },
+        "dark_map": {
+            "type": "boolean",
+            "default": true,
+            "description": "Darken the base map while Live Pulse is on (a filter on the map tiles, nothing extra is downloaded)"
+        },
+        "show_arcs": {
+            "type": "boolean",
+            "default": true,
+            "description": "Draw arcs along the part of a packet's path that is known (needs a position for your own node)"
+        },
+        "persistence": {
+            "type": "select",
+            "options": ["short", "normal", "long"],
+            "default": "normal",
+            "description": "How long pulses, arcs and afterglows stay on screen: short (about 2 s, no afterglow on nodes), normal (about 4 s, nodes glow for a minute), long (about 6 s, nodes glow for three minutes). The panel can change it per browser."
+        },
+        "max_animations": {
+            "type": "number",
+            "default": 80,
+            "min": 10,
+            "max": 300,
+            "description": "Most pulses and arcs on screen at once; the oldest give way on a busy mesh"
+        }
+    }
+}

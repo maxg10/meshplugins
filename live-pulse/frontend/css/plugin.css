@@ -1,0 +1,159 @@
+/* Live Pulse plugin panel: matches the look of the core map controls. */
+
+.live-pulse-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.live-pulse-panel {
+    background: rgba(15, 23, 42, 0.92);
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    width: 228px;
+    max-width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.live-pulse-panel .lp-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.live-pulse-panel .lp-body {
+    margin-top: 7px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(229, 231, 235, 0.18);
+}
+
+.live-pulse-panel .lp-sub {
+    color: #cbd5e1;
+    font-size: 11px;
+}
+
+.live-pulse-panel .lp-persist {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 6px;
+}
+
+.live-pulse-panel .lp-persist-label {
+    flex: 1 1 auto;
+    font-size: 11px;
+    color: #cbd5e1;
+}
+
+.live-pulse-panel .lp-persist button {
+    flex: 0 0 auto;
+    padding: 1px 6px;
+    background: rgba(30, 41, 59, 0.95);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    font-size: 10px;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.live-pulse-panel .lp-persist button:hover {
+    background: rgba(51, 65, 85, 0.95);
+}
+
+.live-pulse-panel .lp-persist button.on {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+}
+
+.live-pulse-panel .lp-stats {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+}
+
+.live-pulse-panel .lp-note {
+    margin-top: 4px;
+    font-size: 10px;
+    color: #fbbf24;
+}
+
+.live-pulse-panel .lp-recent {
+    margin-top: 6px;
+}
+
+.live-pulse-panel .lp-row {
+    display: grid;
+    grid-template-columns: 8px 1fr;
+    column-gap: 6px;
+    padding: 3px 0;
+    border-top: 1px solid rgba(229, 231, 235, 0.08);
+    cursor: default;
+}
+
+.live-pulse-panel .lp-row[title] {
+    cursor: pointer;
+}
+
+.live-pulse-panel .lp-row[title]:hover .lp-name {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.live-pulse-panel .lp-row i {
+    grid-row: 1 / span 2;
+    align-self: center;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.live-pulse-panel .lp-name {
+    font-size: 11px;
+    color: #e5e7eb;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.live-pulse-panel .lp-meta {
+    font-size: 10px;
+    color: #9ca3af;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.live-pulse-panel .lp-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px 8px;
+    margin-top: 7px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(229, 231, 235, 0.18);
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+.live-pulse-panel .lp-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.live-pulse-panel .lp-key i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}

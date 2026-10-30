@@ -46,6 +46,7 @@ The live catalog is `https://meshpulse.app/plugins/plugins.json`; install from *
 | 🩺 [Lifelines](lifelines/) | 1.2.0 | frontend | Finds the single points of failure in your mesh: the nodes that, if they went off the air, would cut other nodes off from the network. |
 | 📉 [Ground Truth](ground-truth/) | 1.0.1 | backend | Compares every link and directly-heard node against its own past few weeks and reports the ones that quietly lost signal, water in a connector, a mast that shifted, a tree that grew. |
 | 🧭 [Trails](trails/) | 1.0.0 | backend | Where moving nodes are heading, where they have been, and a replay of it all. |
+| ⚡ [Live Pulse](live-pulse/) | 1.0.0 | frontend | Radio traffic as it happens: pulses on the sender and glowing arcs along the part of the path your radio can see. |
 
 ## License
 
