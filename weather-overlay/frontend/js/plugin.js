@@ -5,6 +5,8 @@
  *
  * Shows environment sensor data as map labels + heatmap.
  * Metric choice persists across page refreshes via api.storage.
+ * Readings no weather sensor can produce (a broken or misdetected sensor) are
+ * hidden by default; the panel can show them, marked.
  */
 
 var WeatherOverlayPlugin = (function () {
@@ -14,6 +16,34 @@ var WeatherOverlayPlugin = (function () {
         { key: 'relativeHumidity',   label: 'Humidity',     unit: '%',    envKey: 'relativeHumidity' },
         { key: 'barometricPressure', label: 'Pressure',     unit: ' hPa', envKey: 'barometricPressure' },
     ];
+
+    // What a weather sensor can physically report. Outside this a reading is a
+    // broken or misdetected sensor (180 °C at night happens), not weather, and
+    // with "Hide impossible readings" on it stays off the labels and the heatmap.
+    var PLAUSIBLE = {
+        temperature:      [-50, 70],     // °C
+        relativeHumidity: [0, 100]       // %
+    };
+    // Pressure is what the sensor measures where it is, not reduced to sea
+    // level: about 840 hPa on a 1600 m summit is right. So the record sea-level
+    // range (870 to 1085 hPa) is moved to the node's altitude, with 3 % to spare
+    // for GPS altitude error. Without an altitude (or 0, which usually means
+    // none) only what no ground station or balloon in the lower air can show is
+    // refused.
+    var P_RECORD = [870, 1085], P_SPARE = 0.03, P_NO_ALT = [300, 1118];
+
+    function pressureRatio(h) {
+        // Standard atmosphere: troposphere, then the lower stratosphere.
+        if (h <= 11000) return Math.pow(1 - 2.25577e-5 * h, 5.25588);
+        return 0.22336 * Math.exp(-(h - 11000) / 6341.6);
+    }
+
+    function pressureRange(node) {
+        var h = node ? parseFloat(node.alt) : NaN;
+        if (!isFinite(h) || h === 0 || h < -500 || h > 30000) return P_NO_ALT;
+        var f = pressureRatio(h);
+        return [P_RECORD[0] * f * (1 - P_SPARE), P_RECORD[1] * f * (1 + P_SPARE)];
+    }
 
     var HEAT_GRADIENT = {
         0.0: '#2563eb', 0.3: '#06b6d4', 0.55: '#22c55e',
@@ -29,6 +59,7 @@ var WeatherOverlayPlugin = (function () {
         this._metric   = 'temperature';
         this._showOnly = false;
         this._showHeat = true;
+        this._filterBad = true;
         this._mapMoveHandler = null;
         this._zoomHandler = null;
     }
@@ -55,11 +86,24 @@ var WeatherOverlayPlugin = (function () {
         return parseFloat(val).toFixed(1) + m.unit;
     };
 
+    Plugin.prototype._plausible = function (val, node) {
+        var v = parseFloat(val);
+        if (!isFinite(v)) return false;
+        var r = this._metric === 'barometricPressure' ? pressureRange(node) : PLAUSIBLE[this._metric];
+        return !r || (v >= r[0] && v <= r[1]);
+    };
+
+    // {shown, hidden}: nodes with a value for the current metric. With the filter
+    // on, impossible readings are counted in `hidden` and drawn nowhere.
     Plugin.prototype._nodesWithData = function (all) {
-        var self = this;
-        return all.filter(function (n) {
-            return self._getMetricValue(n) != null;
+        var self = this, shown = [], hidden = 0;
+        all.forEach(function (n) {
+            var v = self._getMetricValue(n);
+            if (v == null) return;
+            if (self._filterBad && !self._plausible(v, n)) { hidden++; return; }
+            shown.push(n);
         });
+        return {shown: shown, hidden: hidden};
     };
 
     Plugin.prototype._clearLabels = function () {
@@ -105,6 +149,11 @@ var WeatherOverlayPlugin = (function () {
             var el = document.createElement('div');
             el.className = 'weather-label-icon';
             el.textContent = self._formatValue(val);
+            if (!self._plausible(val, n)) {
+                // Only reached with the filter off: say plainly it is not weather.
+                el.className += ' wo-bad';
+                el.textContent = '⚠ ' + el.textContent;
+            }
             el.style.position = 'absolute';
             el.style.pointerEvents = 'none';
             pane.appendChild(el);
@@ -147,8 +196,8 @@ var WeatherOverlayPlugin = (function () {
         var vals = [];
         nodes.forEach(function (n) {
             if (n.lat == null || n.lon == null) return;
-            var v = self._getMetricValue(n);
-            if (v == null) return;
+            var v = parseFloat(self._getMetricValue(n));
+            if (!isFinite(v)) return;
             vals.push(v);
             points.push([n.lat, n.lon, v]);
         });
@@ -176,9 +225,11 @@ var WeatherOverlayPlugin = (function () {
         }).addTo(self._lmap);
     };
 
-    Plugin.prototype._updateCount = function (weatherCount, total) {
-        var el = document.getElementById('wo-count');
-        if (el) el.textContent = weatherCount + ' / ' + total + ' nodes with data';
+    Plugin.prototype._updateCount = function (weatherCount, total, hidden) {
+        var el = this._panel && this._panel.querySelector('.wo-count');
+        if (!el) return;
+        el.textContent = weatherCount + ' / ' + total + ' nodes with data' +
+            (hidden ? ' · ' + hidden + ' impossible hidden' : '');
     };
 
     Plugin.prototype._render = function () {
@@ -186,7 +237,8 @@ var WeatherOverlayPlugin = (function () {
         // labels would survive unchecking Meshtastic/Meshcore. getVisible() is 2.7.0+.
         var api = this.api;
         var all = api.nodes.getVisible ? api.nodes.getVisible() : api.nodes.getAll();
-        var weatherNodes = this._nodesWithData(all);
+        var data = this._nodesWithData(all);
+        var weatherNodes = data.shown;
         var zoom = this._lmap.getZoom();
         if (zoom >= 10) {
             this._buildLabels(weatherNodes);
@@ -194,7 +246,7 @@ var WeatherOverlayPlugin = (function () {
             this._clearLabels();
         }
         this._buildHeat(weatherNodes);
-        this._updateCount(weatherNodes.length, all.length);
+        this._updateCount(weatherNodes.length, all.length, data.hidden);
     };
 
     Plugin.prototype._buildPanel = function () {
@@ -212,8 +264,17 @@ var WeatherOverlayPlugin = (function () {
                        m.label + ' (' + m.unit.trim() + ')</option>';
             }).join(''),
             '</select>',
+            '<label class="wo-filter" title="Temperature outside -50 to 70 °C, humidity outside 0 to 100 %, pressure outside what is possible at the node\'s altitude: a broken or misdetected sensor, not weather">',
+            '<input type="checkbox" id="wo-filter"' + (self._filterBad ? ' checked' : '') + '>',
+            ' Hide impossible readings</label>',
             '<div class="wo-count" id="wo-count">Loading…</div>'
         ].join('');
+
+        panel.querySelector('#wo-filter').addEventListener('change', function (e) {
+            self._filterBad = e.target.checked;
+            self.api.storage.set('filterBad', self._filterBad ? '1' : '0');
+            self._render();
+        });
 
         panel.querySelector('#wo-heat').addEventListener('change', function (e) {
             self._showHeat = e.target.checked;
@@ -249,6 +310,7 @@ var WeatherOverlayPlugin = (function () {
         // Restore persisted state
         this._metric   = api.storage.get('metric')   || 'temperature';
         this._showHeat = api.storage.get('showHeat') !== '0';
+        this._filterBad = api.storage.get('filterBad') !== '0';
 
         this._panel = this._buildPanel();
         if (api.panels && api.panels.register) {

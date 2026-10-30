@@ -51,6 +51,16 @@
     font-size: 12px;
     cursor: pointer;
 }
+.weather-label-icon.wo-bad {
+    color: #fecaca;
+    border-color: rgba(239, 68, 68, 0.75);
+    background: rgba(69, 10, 10, 0.85);
+}
+.weather-overlay-panel .wo-filter {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #cbd5e1;
+}
 .weather-overlay-panel .wo-count {
     margin-top: 6px;
     font-size: 10px;
