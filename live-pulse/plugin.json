@@ -1,7 +1,7 @@
 {
     "id": "maxg10/live-pulse",
     "name": "Live Pulse",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Radio traffic as it happens: a pulse on the node that just transmitted and a glowing arc along the part of its path your radio can actually see. Drawn in the browser, so the Raspberry Pi does no extra work.",
     "author": {
         "name": "Mariusz \"Max\" Gieparda",
@@ -11,7 +11,7 @@
     "license": "GPL-3.0",
     "compatibility": {
         "min_mapper_version": "2.9.3",
-        "tested_up_to": "2.9.3"
+        "tested_up_to": "2.9.4"
     },
     "permissions": ["raw_map_access"],
     "backend": null,

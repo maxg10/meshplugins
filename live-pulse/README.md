@@ -76,6 +76,13 @@ The panel switches remember your choice in this browser.
 
 MeshPulse **2.9.3** or newer (it needs `api.packets`).
 
+## Version history
+
+- **1.0.1**: a node the map's filters hide (for example with Circles' "Only
+  my circles", or "Show only routers") is hidden here too: no pulse, no blip
+  on your own node, and not in the panel's list.
+- **1.0.0**: first release.
+
 ## License
 
 GPL-3.0 · © 2026 Mariusz "Max" Gieparda

@@ -160,6 +160,11 @@ var LivePulsePlugin = (function () {
         if (this.api.nodes.getVisible) {
             visible = {};
             (this.api.nodes.getVisible() || []).forEach(function (n) { if (n && n.id) visible[n.id] = true; });
+            // Nodes without a position that the No GPS list still shows count as
+            // shown too: they are only hidden from the map for lack of a place.
+            if (this.api.nodes.getVisibleNoPosition) {
+                (this.api.nodes.getVisibleNoPosition() || []).forEach(function (n) { if (n && n.id) visible[n.id] = true; });
+            }
         }
         var tracker = this.api.nodes.getTracker ? this.api.nodes.getTracker() : null;
         this.nodes = {byId: byId, visible: visible, tracker: tracker};
@@ -208,6 +213,10 @@ var LivePulsePlugin = (function () {
         var tracker = idx.tracker;
         var relay = p.hops === 0 ? null : this._resolveRelay(p.relay, idx);
         if (relay && relay.id === p.from_id) relay = null;
+
+        // A node the map's filters hide (Only my circles, routers only, ...)
+        // is hidden here too: no pulse, no blip, not in the panel.
+        if (from && !this._shown(from, idx)) return;
 
         this.minute.push({t: now, id: p.from_id});
         this._remember(p, from, relay, cat, now);

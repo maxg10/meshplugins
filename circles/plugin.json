@@ -1,0 +1,44 @@
+{
+    "id": "maxg10/circles",
+    "name": "Circles",
+    "version": "1.0.0",
+    "description": "Your own circles of nodes: family, your own gear, nodes you keep an eye on. Rings on the map, a panel with when each was last heard, and one switch to show only them, with the relays that carry their traffic and, if you like, their neighbours. Circles are kept on the MeshPulse host, so every browser sees the same ones.",
+    "author": {
+        "name": "Mariusz \"Max\" Gieparda",
+        "github": "maxg10",
+        "url": "https://meshpulse.app"
+    },
+    "license": "GPL-3.0",
+    "compatibility": {
+        "min_mapper_version": "2.9.4",
+        "tested_up_to": "2.9.4"
+    },
+    "permissions": ["raw_map_access"],
+    "backend": null,
+    "frontend": {
+        "pages": [],
+        "js": "frontend/js/plugin.js",
+        "css": "frontend/css/plugin.css"
+    },
+    "hooks": [],
+    "api_routes": [],
+    "websocket_channels": [],
+    "dependencies": [],
+    "config": {
+        "circles": {
+            "type": "hidden",
+            "default": [
+                {"id": "family", "name": "Family", "emoji": "👨‍👩‍👧", "color": "#f472b6", "nodes": []},
+                {"id": "mine", "name": "My nodes", "emoji": "🛠", "color": "#60a5fa", "nodes": []}
+            ],
+            "description": "The circles and their nodes, edited in the map panel"
+        },
+        "relay_minutes": {
+            "type": "number",
+            "default": 5,
+            "min": 1,
+            "max": 120,
+            "description": "How long a relay that carried a circle member's packet stays on the map with \"Only my circles\" on (minutes)"
+        }
+    }
+}
