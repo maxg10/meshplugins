@@ -1,0 +1,47 @@
+/* Footprint - MeshPulse plugin
+   Copyright (C) 2026 Mariusz "Max" Gieparda · GPL-3.0 */
+
+.fp-panel {
+    background: rgba(17, 24, 39, 0.92);
+    color: #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 10px 10px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    width: 270px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+    box-sizing: border-box;
+}
+.fp-head { font-weight: 600; margin-bottom: 6px; }
+
+.fp-row { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+.fp-between { justify-content: space-between; margin-top: 0; }
+.fp-label { width: 44px; color: #9ca3af; font-size: 11px; }
+
+.fp-toggle, .fp-chip {
+    font-family: inherit; color: #d1d5db; border: none; border-radius: 4px; cursor: pointer;
+    background: rgba(55, 65, 81, 0.6);
+}
+.fp-toggle { padding: 5px 10px; font-size: 12px; }
+.fp-chip { padding: 3px 6px; font-size: 11px; }
+.fp-toggle:hover, .fp-chip:hover { background: rgba(75, 85, 99, 0.7); }
+.fp-toggle.fp-on, .fp-chip.fp-on { background: #1d4ed8; color: #fff; }
+
+.fp-check { cursor: pointer; color: #d1d5db; font-size: 11px; gap: 6px; }
+.fp-check input { margin: 0; accent-color: #a855f7; }
+
+.fp-legend { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 8px; font-size: 10px; color: #d1d5db; }
+.fp-legend span { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.fp-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; opacity: 0.85; }
+
+.fp-stats { margin-top: 8px; line-height: 1.45; }
+.fp-note { margin-top: 8px; font-size: 10.5px; line-height: 1.4; color: #9ca3af; }
+.fp-error { margin-top: 8px; color: #fca5a5; }
+.fp-dim { color: #9ca3af; font-size: 11px; margin-top: 4px; }
+
+.fp-popup .leaflet-popup-content { font-size: 12px; margin: 10px 12px; }
+.fp-pop { line-height: 1.45; }
+.fp-who { margin-top: 6px; }
+.fp-table { border-collapse: collapse; width: 100%; }
+.fp-table td { padding: 2px 6px 2px 0; vertical-align: top; }
+.fp-table td:first-child { font-weight: 600; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

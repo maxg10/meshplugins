@@ -1,0 +1,68 @@
+{
+    "id": "maxg10/footprint",
+    "name": "Footprint",
+    "version": "1.0.0",
+    "description": "Your real coverage, measured instead of predicted. Every position packet your radio hears straight from the sender becomes a sample of where you can hear, with its SNR; one that only reaches you through a relay marks a spot where the mesh, not your antenna, carries you. Drawn as a grid coloured by signal, with an outline mode to lay over the predicted coverage. Starts with history when Trails is installed.",
+    "author": {
+        "name": "Mariusz \"Max\" Gieparda",
+        "github": "maxg10",
+        "url": "https://meshpulse.app"
+    },
+    "license": "GPL-3.0",
+    "compatibility": {
+        "min_mapper_version": "2.9.1",
+        "tested_up_to": "2.9.4"
+    },
+    "permissions": [
+        "raw_map_access"
+    ],
+    "backend": {
+        "entry_point": "backend/main.py"
+    },
+    "frontend": {
+        "pages": [],
+        "js": "frontend/js/plugin.js",
+        "css": "frontend/css/plugin.css"
+    },
+    "hooks": [
+        "on_position"
+    ],
+    "api_routes": [],
+    "websocket_channels": [
+        "footprint"
+    ],
+    "dependencies": [],
+    "config": {
+        "retention_days": {
+            "type": "number",
+            "default": 90,
+            "min": 7,
+            "max": 365,
+            "description": "How many days of samples to keep"
+        },
+        "max_position_error_m": {
+            "type": "number",
+            "default": 1500,
+            "min": 50,
+            "max": 6000,
+            "description": "Ignore positions a node blurs by more than this (metres). Blurred ones that are kept only show on a grid coarse enough for them: a 1.5 km blur counts on the 1 km grid, not on 250 m."
+        },
+        "mesh_only_radius_km": {
+            "type": "number",
+            "default": 0,
+            "min": 0,
+            "max": 200,
+            "description": "How far from your node to draw 'mesh only' cells (km). 0 = automatic: a little past the farthest node you have heard directly."
+        },
+        "import_history": {
+            "type": "boolean",
+            "default": true,
+            "description": "On first start, build samples from the history MeshPulse already has (stats.db joined with the Trails plugin's positions)"
+        },
+        "stats_db_path": {
+            "type": "string",
+            "default": "/var/www/html/meshpulse/stats.db",
+            "description": "Where MeshPulse keeps stats.db (only read, for the history import)"
+        }
+    }
+}
