@@ -1,0 +1,30 @@
+{
+    "id": "maxg10/preset-scout",
+    "name": "Preset Scout",
+    "version": "1.0.0",
+    "description": "Which LoRa presets does the mesh around you use? Preset Scout moves your radio through the presets you pick, a few minutes on each, listen-only, and shows per preset how many nodes it heard, directly or through the mesh, how busy the channel was, and where those nodes are on the map. Then it puts the radio back exactly as it was. Scans are kept, so you can compare later.",
+    "author": {
+        "name": "Mariusz \"Max\" Gieparda",
+        "github": "maxg10",
+        "url": "https://meshpulse.app"
+    },
+    "license": "GPL-3.0",
+    "compatibility": {
+        "min_mapper_version": "2.9.5",
+        "tested_up_to": "2.9.5"
+    },
+    "permissions": [
+        "raw_map_access"
+    ],
+    "backend": null,
+    "frontend": {
+        "pages": [],
+        "js": "frontend/js/plugin.js",
+        "css": "frontend/css/plugin.css"
+    },
+    "hooks": [],
+    "api_routes": [],
+    "websocket_channels": [],
+    "dependencies": [],
+    "config": {}
+}

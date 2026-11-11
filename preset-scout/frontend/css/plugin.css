@@ -1,0 +1,59 @@
+/* Preset Scout - MeshPulse plugin
+   Copyright (C) 2026 Mariusz "Max" Gieparda · GPL-3.0 */
+
+.ps-panel {
+    background: rgba(17, 24, 39, 0.92); color: #e5e7eb; border-radius: 8px;
+    padding: 8px 10px 10px; font-family: Arial, sans-serif; font-size: 12px; width: 290px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); box-sizing: border-box;
+}
+.ps-head { font-weight: 600; margin-bottom: 6px; }
+.ps-head2 { font-weight: 600; margin: 4px 0; }
+.ps-dim { color: #9ca3af; font-size: 11px; margin-top: 5px; line-height: 1.4; }
+.ps-error { color: #fca5a5; margin-top: 6px; line-height: 1.4; }
+.ps-warn { margin-top: 8px; padding: 7px 8px; border-radius: 6px; background: rgba(120, 53, 15, 0.55);
+           border: 1px solid #b45309; color: #fde68a; line-height: 1.4; }
+.ps-sep { border-top: 1px solid rgba(75, 85, 99, 0.6); margin: 9px 0 6px; }
+
+.ps-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; margin-top: 7px; }
+.ps-preset { display: flex; align-items: center; gap: 5px; cursor: pointer; color: #d1d5db; white-space: nowrap; }
+.ps-preset input { margin: 0; accent-color: #3b82f6; }
+.ps-own { color: #fff; }
+.ps-tag { font-size: 9.5px; padding: 0 4px; border-radius: 3px; background: #1d4ed8; color: #fff; }
+.ps-tag-warn { background: #b45309; }
+
+.ps-row { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+.ps-label { width: 34px; color: #9ca3af; font-size: 11px; }
+.ps-chip, .ps-btn, .ps-histrow {
+    font-family: inherit; color: #d1d5db; border: none; border-radius: 4px; cursor: pointer;
+    background: rgba(55, 65, 81, 0.6);
+}
+.ps-chip { padding: 3px 7px; font-size: 11px; }
+.ps-chip.ps-on, .ps-histrow.ps-on { background: #1d4ed8; color: #fff; }
+.ps-btn { padding: 6px 10px; font-size: 12px; background: #1d4ed8; color: #fff; }
+.ps-btn:disabled { background: #374151; color: #9ca3af; cursor: default; }
+.ps-btn.ps-ghost { background: rgba(55, 65, 81, 0.8); color: #e5e7eb; }
+.ps-go { background: #b45309; }
+.ps-chip:hover, .ps-ghost:hover, .ps-histrow:hover { background: rgba(75, 85, 99, 0.8); }
+
+.ps-run { margin-top: 2px; font-size: 12.5px; }
+.ps-bar { height: 5px; background: rgba(55, 65, 81, 0.8); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.ps-bar i { display: block; height: 100%; background: #3b82f6; transition: width 0.4s; }
+.ps-live { margin-top: 6px; color: #d1d5db; }
+
+.ps-table { width: 100%; border-collapse: collapse; margin-top: 7px; font-size: 11px; }
+.ps-table th { text-align: right; color: #9ca3af; font-weight: normal; padding: 2px 2px; }
+.ps-table th:first-child, .ps-table td:first-child { text-align: left; }
+.ps-table td { text-align: right; padding: 3px 2px; border-top: 1px solid rgba(55, 65, 81, 0.6); white-space: nowrap; vertical-align: top; }
+/* A long preset name with its tags wraps instead of pushing the table out of the panel. */
+.ps-table td:first-child { white-space: normal; line-height: 1.35; }
+.ps-table .ps-tag { font-size: 9px; padding: 0 3px; }
+.ps-table .ps-dot { margin-right: 4px; }
+.ps-table tr.ps-best td { color: #86efac; font-weight: 600; }
+.ps-table tr.ps-click { cursor: pointer; }
+.ps-table tr.ps-click:hover td { background: rgba(55, 65, 81, 0.5); }
+.ps-table tr.ps-onmap td { background: rgba(29, 78, 216, 0.35); }
+.ps-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
+.ps-rec { margin-top: 7px; line-height: 1.4; }
+
+.ps-hist { display: flex; flex-direction: column; gap: 3px; }
+.ps-histrow { text-align: left; padding: 4px 7px; font-size: 11px; }

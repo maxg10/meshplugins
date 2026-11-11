@@ -49,6 +49,7 @@ The live catalog is `https://meshpulse.app/plugins/plugins.json`; install from *
 | ⚡ [Live Pulse](live-pulse/) | 1.0.1 | frontend | Radio traffic as it happens: pulses on the sender and glowing arcs along the part of the path your radio can see. |
 | ⭕ [Circles](circles/) | 1.0.0 | frontend | Your own circles of nodes (family, your gear, nodes you watch): rings on the map, a status panel, and one switch to show only them, with their relays. |
 | 📶 [Footprint](footprint/) | 1.0.0 | backend | Your real coverage, measured instead of predicted: where your radio hears others directly, coloured by SNR, and where only the mesh carries you. |
+| 📻 [Preset Scout](preset-scout/) | 1.0.0 | frontend | Which LoRa presets the mesh around you uses: your radio listens on each for a few minutes, sends nothing, and goes back exactly as it was. Needs MeshPulse 2.9.5. |
 
 ## License
 
